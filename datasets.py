@@ -5,7 +5,7 @@ import h5py
 import numpy as np
 import torch
 import torch.utils.data as data
-from loftr.util import load_torch_image, readh5, loadh5
+# from loftr.util import load_torch_image, readh5, loadh5
 import kornia as K
 
 

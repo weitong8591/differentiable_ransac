@@ -206,7 +206,7 @@ if __name__ == '__main__':
     parser = create_parser(
         description="Fully Differentiable RANSAC.")
     opt = parser.parse_args()
-
+    opt.device = torch.device('cuda:0' if torch.cuda.is_available() and opt.device != 'cpu' else 'cpu')
     print(f"Running on {opt.device}")
 
     # collect dataset list to be used for testing

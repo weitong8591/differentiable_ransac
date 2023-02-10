@@ -213,7 +213,7 @@ if __name__ == '__main__':
         description="Fully Differentiable RANSAC.")
     config = parser.parse_args()
     # check if gpu device is available
-    config.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    config.device = torch.device('cuda:0' if torch.cuda.is_available() and config.device != 'cpu' else 'cpu')
     print(f"Running on {config.device}")
 
     train_model = DeepRansac_CLNet(config).to(config.device)

@@ -68,7 +68,7 @@ def test(model, test_loader, opt):
                     # normalize the points for E error calculation
                     pts1 = cv2.undistortPoints(pts1.transpose(2, 1, 0), K1_[b], None)
                     pts2 = cv2.undistortPoints(pts2.transpose(2, 1, 0), K2_[b], None)
-                    errR, errT = eval_essential_matrix(pts1.squeeze(0), pts2.squeeze(0), E, gt_R[b], gt_t[b])
+                    errR, errT = eval_essential_matrix(pts1.squeeze(), pts2.squeeze(), E, gt_R[b], gt_t[b])
                 else:
                     pts1 = correspondences[b, 0:2].squeeze(-1).cpu().detach().numpy().T
                     pts2 = correspondences[b, 2:4].squeeze(-1).cpu().detach().numpy().T
@@ -112,7 +112,7 @@ if __name__ == '__main__':
         description="Fully Differentiable RANSAC.")
     opt = parser.parse_args()
     # check if gpu device is available
-    opt.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    opt.device = torch.device('cuda:0' if torch.cuda.is_available() and opt.device != 'cpu' else 'cpu')
     print(f"Running on {opt.device}")
 
     # collect datasets to be used for testing
