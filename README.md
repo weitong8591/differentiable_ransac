@@ -123,7 +123,7 @@ More details are covered in our paper and feel free to cite it if useful:
 ```
 @article{wei2023generalized,
   title={Generalized differentiable RANSAC},
-  author={Wei, Tong and Patel, Yash and Matas, J and Barath, D},
+  author={Wei, Tong and Patel, Yash and Shekhovtsov, Alexander and Matas, J and Barath, D},
   journal={arXiv preprint arXiv:2212.13185},
   year={2023}
 }
