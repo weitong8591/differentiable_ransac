@@ -121,11 +121,11 @@ $ python train.py -nf 2000 -m pretrained_models/weights_init_net_3_sampler_0_epo
 ## Citation
 More details are covered in our paper and feel free to cite it if useful:
 ```
-@article{wei2022fully,
-  title={Fully Differentiable RANSAC},
-  author={Wei, Tong and Patel, Yash and Matas, Jiri and Barath, Daniel},
+@article{wei2023generalized,
+  title={Generalized differentiable RANSAC},
+  author={Wei, Tong and Patel, Yash and Matas, J and Barath, D},
   journal={arXiv preprint arXiv:2212.13185},
-  year={2022}
+  year={2023}
 }
 ```
 Contact me at weitongln@gmail.com
