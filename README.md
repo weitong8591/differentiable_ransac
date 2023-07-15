@@ -1,4 +1,4 @@
-# Fully Differentiable RANSAC Implementation in PyTorch
+# Generalized Differentiable RANSAC Implementation in PyTorch
 
 ## Python Environments
 Here are some required packages,
