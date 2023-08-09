@@ -23,7 +23,6 @@ class MSACScore(object):
         pts2 = matches[:, 2:4]
 
         num_pts = pts1.shape[0]
-        # truncated_threshold = 3 / 2 * threshold  # wider threshold
 
         # get homogenous coordinates
         hom_pts1 = torch.cat((pts1, torch.ones((num_pts, 1), device=pts1.device)), dim=-1)
@@ -37,11 +36,9 @@ class MSACScore(object):
         M_x2_ = models.transpose(-1, -2).matmul(hom_pts2.transpose(-1, -2))
         JJ_T_ = M_x1_[:, 0] ** 2 + M_x1_[:, 1] ** 2 + M_x2_[:, 0] ** 2 + M_x2_[:, 1] ** 2
 
-        #x1_M_x2_ = hom_pts1.matmul(M_x2_)
         x1_M_x2_ = hom_pts1.T.unsqueeze(0).mul(M_x2_).sum(-2)
 
         try:
-            # squared_distances = (torch.diagonal(x1_M_x2_, dim1=1, dim2=2)) ** 2 / JJ_T_
             squared_distances = x1_M_x2_.square().div(JJ_T_)
         except Exception as e:
             print("wrong", e)
@@ -55,6 +52,6 @@ class MSACScore(object):
         #inlier_number = torch.sum(squared_distances.squeeze(0) < self.threshold, dim=-1)
         # score = (-squared_residuals + inlier_number * self.threshold)/self.threshold
 
-        return msac_scores, masks#, squared_residuals
+        return msac_scores, masks
 
 

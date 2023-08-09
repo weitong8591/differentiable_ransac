@@ -89,7 +89,8 @@ def train_step(train_data, model, opt, loss_fn):
                     K1,
                     K2,
                     im_size1,
-                    im_size2
+                    im_size2, 
+                    svd=False
                 )
 
             loss.append(opt.w[idx] * train_loss)

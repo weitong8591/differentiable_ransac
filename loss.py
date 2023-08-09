@@ -24,7 +24,9 @@ class PoseLoss(nn.modules.Module):
             K1=None,
             K2=None,
             im_size1=None,
-            im_size2=None
+            im_size2=None,
+            svd=False
+
     ):
 
         train_loss = []
@@ -53,11 +55,11 @@ class PoseLoss(nn.modules.Module):
                 Es = estimated_models[b]
 
             # recover the motions, calculate the epipolar error
-            # Rs, ts = motion_from_essential_choose_solution(models, K1[b].repeat(models.shape[0], 1, 1), K2[b].repeat(models.shape[0], 1, 1), pts1[b].repeat(models.shape[0], 1, 1), pts2[b].repeat(models.shape[0], 1, 1))
             loss = []
             for i in range(Es.shape[0]):
                 # pose error calculation
-                errR, errT = eval_essential_matrix(pts1_1, pts2_2, models[i], gt_R[b], gt_t[b])
+                import pdb; pdb.set_trace()
+                errR, errT = eval_essential_matrix(pts1_1, pts2_2, models[i], gt_R[b], gt_t[b], svd=svd)
                 try:
                     loss.append((errR + errT) / 2) # average
                 except:
@@ -150,16 +152,4 @@ class MatchLoss(object):
         # average
         return sum(essential_loss) / gt_E.shape[0]
 
-    # def msac_loss(self, models, pts1, pts2, K1, K2, im_size1, im_size2):
-    #     # losses = []
-    #     msac_score = []
-    #     for b in range(len(models)):
-    #         if self.fmat:
-    #             pts1_1 = denormalize_pts(pts1[b].clone(), im_size1[b])
-    #             pts2_2 = denormalize_pts(pts2[b].clone(), im_size2[b])
-    #         scores, _, _ = self.scoring_fun.score(torch.concat((pts1_1, pts2_2), dim=-1), models[b])  # _single
-    #
-    #         msac_score.append(torch.mean(scores) / 2000)
-    #         # losses.append()
-    #
-    #     return 1.0 - sum(msac_score) / len(models)
+

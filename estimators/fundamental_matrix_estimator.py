@@ -310,35 +310,3 @@ class FundamentalMatrixEstimatorNew(object):
         return Fs.view(-1, 3, 3)
 
 
-
-# unit test
-#
-# batch_size = 4
-# num_points = 10
-# num_samples = 7
-# coordinates = 4
-# parser = create_parser(
-#         description="test 8PC.")
-# pts = torch.tensor([[[ 5.3496e-03, -5.0421e-02, -3.0159e-02,  1.8618e-02],
-#         [ 1.5412e-01,  1.6157e-02,  5.9566e-02,  5.6140e-02],
-#         [ 3.6183e-02,  5.0953e-03, -1.2028e-02,  5.1611e-02],
-#         [ 3.0706e-02, -1.4839e-01, -1.5853e-02, -5.0327e-02],
-#         [ 5.1635e-02, -4.2628e-02, -6.9411e-02,  2.7233e-02],
-#                     [ 5.1635e-02, -4.2628e-02, -6.9411e-02,  2.7233e-02],
-#                     [ 5.1635e-02, -4.2628e-02, -6.9411e-02,  2.7233e-02]]], device='cuda:0', requires_grad=True)
-# estimator = FundamentalMatrixEstimatorNew()
-# matches = torch.rand([batch_size, num_samples, coordinates], device='cuda:0')
-# matches.requires_grad = True
-# estimator_old = FundamentalMatrixEstimator()
-# m = estimator_old.estimate_model(pts)
-# models = estimator.estimate_model(pts)
-# models.retain_grad()
-# target = torch.rand(models.shape, device=models.device)
-# loss = torch.norm(models-target)#min_matches
-# try:
-#     loss.backward()
-#     print("successfully")
-# except Exception as e:
-#     print(e)
-
-

@@ -175,31 +175,3 @@ class EssentialMatrixEstimator(object):
         ], dim=-1)
 
 
-""" to check if 5PC Stewenius is differentiable. (not)"""
-"""
-pts = torch.tensor([[[ 5.3496e-03, -5.0421e-02, -3.0159e-02,  1.8618e-02],
-         [ 1.5412e-01,  1.6157e-02,  5.9566e-02,  5.6140e-02],
-         [ 3.6183e-02,  5.0953e-03, -1.2028e-02,  5.1611e-02],
-         [ 3.0706e-02, -1.4839e-01, -1.5853e-02, -5.0327e-02],
-         [ 5.1635e-02, -4.2628e-02, -6.9411e-02,  2.7233e-02]]], device='cpu', requires_grad=True)
-# pts = torch.tensor([[[0.0859, 0.0412, 0.3694, 0.0248], [0.2730, 0.4039, 0.3167, -0.1500],
-#                             [0.1971, 0.4255, 0.2256, 0.1628],
-#
-#                             [0.1486, -0.2310, 0.1055, 0.2293],
-#
-#                             [0.0987, -0.4417, -0.4664, 0.2124]]], device='cuda', requires_grad=True)
-parser = create_parser(
-        description="test 5PC stewenius.")
-opt = parser.parse_args()
-opt.device='cpu'
-e = EssentialMatrixEstimator(opt)
-models = e.estimate_model(pts)
-models.retain_grad()
-target = torch.rand(models.shape, device=models.device)
-loss = torch.norm(models-target)#min_matches
-try:
-    loss.backward()
-except Exception as e:
-    print(e)
-models.grad
-"""

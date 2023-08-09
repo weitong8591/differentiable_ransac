@@ -14,10 +14,6 @@ def create_parser(description):
         description=description,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    # parser.add_argument('--image_src', '-src', default='../example_data/02928139_3448003521.jpg',
-    #                     help='The path to the source image')
-    # parser.add_argument('--image_dst', '-dst', default='../example_data/02085496_6952371977.jpg',
-    #                     help='The path to the destination image')
     parser.add_argument('--model', '-m', default='None',#EF_hist_size_10_snn_0_85_thr_3.pth
                         help='The name of the model to be used')
     parser.add_argument('--model_loftr', '-m2', default='None',  # EF_hist_size_10_snn_0_85_thr_3.pth
@@ -44,23 +40,6 @@ def create_parser(description):
                              '1,2 - GumbelSoftmax Sampler for 5/7PC, 3-GUmbel Softmax SAmpler for 8PC')
     parser.add_argument('--precision', '-pr', type=int, default=1,
                         help='The used data precision. 0 - float16, 1 - float32, 2-float64')
-    # parser.add_argument('--fx1', '-fx1', default=1.23880078e+03,
-    #                     help='Source focal length x')
-    # parser.add_argument('--fy1', '-fy1', default=1.23880078e+03,
-    #                     help='Source focal length y')
-    # parser.add_argument('--px1', '-px1', default=3.90000000e+02,
-    #                     help='Source principal point x')
-    # parser.add_argument('--py1', '-py1', default=5.31500000e+02,
-    #                     help='Source principal point y')
-    #
-    # parser.add_argument('--fx2', '-fx2', default=1.15996667e+03,
-    #                     help='Destination focal length x')
-    # parser.add_argument('--fy2', '-fy2', default=1.15996667e+03,
-    #                     help='Destination focal length y')
-    # parser.add_argument('--px2', '-px2', default=5.15000000e+02,
-    #                     help='Destination principal point x')
-    # parser.add_argument('--py2', '-py2', default=3.43500000e+02,
-    #                     help='Destination principal point y')
 
     parser.add_argument('--tr', '-tr', type=int, default=0,
                         help='1 - train, 0v- test')

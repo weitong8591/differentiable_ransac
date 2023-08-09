@@ -22,10 +22,6 @@ def normalize_pts(pts, im_size):
 	pts -- 3-dim array conainting x and y coordinates in the last dimension, first dimension should have size 1.
 	im_size -- image height and width
 	"""
-
-    #pts[0, :, 0] -= float(im_size[1]) / 2
-    #pts[0, :, 1] -= float(im_size[0]) / 2
-    #pts /= float(max(im_size))
     ret = pts.clone() / max(im_size) - torch.stack((im_size[1]/2, im_size[0]/2))
     return ret
 
@@ -47,19 +43,20 @@ def denormalize_pts(pts, im_size):
             pts -- N-dim array containing x and y coordinates in the first dimension
             im_size -- image height and width
     """
-    #ret = pts * max(im_size)
-    #ret[:, 0] += im_size[1] / 2
-    #ret[:, 1] += im_size[0] / 2
+
     ret = pts.clone() * max(im_size) + torch.stack((im_size[1]/2, im_size[0]/2))
 
     return ret
 
 
-def recoverPose(model, p1, p2, distanceThreshold=50):
+def recoverPose(model, p1, p2, svd, distanceThreshold=50):
     """ recover the relative poses (R, t) from essential matrix, and choose the correct solution from 4"""
 
     # decompose E matirx to get R1, R2, t, -t
-    R1, R2, t = decompose_E(model)
+    if svd:
+        R1, R2, t = decompose_E(model)
+    else:
+        R1, R2, t = new_decompose_E(model)
 
     # four solutions
     P = []
@@ -90,8 +87,7 @@ def recoverPose(model, p1, p2, distanceThreshold=50):
 def decompose_E(model):
     try:
         u, s, vT = torch.linalg.svd(model)
-        #_, vT = torch.linalg.eig(model.transpose(-1, -2) @model)
-        #_, u = torch.linalg.eig(model@model.transpose(-1, -2))
+
     except Exception as e:
         print(e)
         model = torch.eye(3, device=model.device)
@@ -110,9 +106,6 @@ def decompose_E(model):
                       [1, 0, 0],
                       [0, 0, 0]], dtype=u.dtype, device=u.device)
 
-    # u_ = u.real.clone() * (-1.0) if torch.det(u.real.clone()) < 0 else u.real.clone()
-    #
-    # vT_ = vT.real.clone() * (-1.0) if torch.det(vT.real.clone()) < 0 else vT.real.clone()
 
     u_ = u * (-1.0) if torch.det(u) < 0 else u
 
@@ -126,7 +119,69 @@ def decompose_E(model):
 
     return R1, R2, t.unsqueeze(1)
 
+def new_decompose_E(model):
 
+    """
+      recover rotation and translation from essential matrices without SVD
+      reference: Horn, Berthold KP. Recovering baseline and orientation from essential matrix[J]. J. Opt. Soc. Am, 1990, 110.
+      input: essential matrix (3, 3)
+      output: two possible solutions of rotation matrices, R1, R2; translation t
+
+    """
+
+    # assert model.shape == (3, 3)
+
+    # Eq.18, choose the largest of the three possible pairwise cross-products
+    e1, e2, e3 = model[:, 0], model[: ,1], model[: ,2]
+    bs = [torch.norm(torch.cross(e1, e2)), torch.norm(torch.cross(e2, e3)), torch.norm(torch.cross(e3, e1))]
+    largest = torch.argmax(torch.stack(bs))
+    bb = bs[largest]
+
+    # sqrt(1/2 trace(EE^T))
+    scale_factor = torch.sqrt(0.5 * torch.trace(model @ model.transpose(0, -1)))
+
+    if largest == 0:
+      b1 = scale_factor * torch.cross(e1, e2) / torch.norm(torch.cross(e1, e2)) 
+    elif largest == 1:
+      b1 = scale_factor * torch.cross(e2, e3) / torch.norm(torch.cross(e2, e3)) 
+    else:
+      b1 = scale_factor * torch.cross(e3, e1) / torch.norm(torch.cross(e3, e1)) 
+
+    # nomalization  
+    b1_ = b1/torch.norm(b1)
+
+    # skew-symmetric matrix
+    t0, t1, t2 = b1
+    B1 = torch.tensor([
+        [0, -t2, t1],
+        [t2, 0, -t0],
+        [-t1, t0, 0]
+        ], device=b1.device)
+    # the second translation and rotation
+    b2 = -b1
+    B2 = -B1
+    
+    # Eq.24, recover R
+    # (bb)R = Cofactors(E)^T - BE
+    R1 = (matrix_cofactor_tensor(model) - B1 @ model) / (b1.dot(b1))
+    R2 = (matrix_cofactor_tensor(model) - B2 @ model) / (b1.dot(b1))
+
+    return R1, R2, b1_.unsqueeze(-1)
+
+def matrix_cofactor_tensor(matrix):
+    """cofactor matrix, refer to the numpy doc"""
+    try:
+      det = torch.det(matrix)
+      if(det!=0):
+        cofactor = None
+        cofactor = torch.linalg.inv(matrix).T * det
+        # return cofactor matrix of the given matrix
+        return cofactor
+      else:
+        raise Exception("singular matrix")
+    except Exception as e:
+        print("could not find cofactor matrix due to", e)
+        
 def cheirality_check(P0, P, p1, p2, distanceThreshold):
     #Q = kornia.geometry.epipolar.triangulate_points(P0.repeat(1024, 1, 1), P, p1, p2)
     # make sure the P type, complex tensor with cause error here
@@ -448,7 +503,7 @@ def eval_essential_matrix_numpy(p1n, p2n, E, dR, dt):
     return err_q / np.pi * 180.0, err_t / np.pi * 180.0
 
 
-def eval_essential_matrix(p1n, p2n, E, dR, dt):
+def eval_essential_matrix(p1n, p2n, E, dR, dt, svd=True):
     """evaluate the essential matrix, decompose E to R and t, return the rotation and translation error."""
 
     if len(p1n) != len(p2n):
@@ -459,7 +514,7 @@ def eval_essential_matrix(p1n, p2n, E, dR, dt):
 
     if E is not None:
         # recover the relative pose from E
-        R, t = recoverPose(E, p1n, p2n)
+        R, t = recoverPose(E, p1n, p2n, svd)
         try:
             err_q, err_t = evaluate_R_t_tensor(dR, dt, R, t)
         except:

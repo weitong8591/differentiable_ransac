@@ -436,34 +436,3 @@ class EssentialMatrixEstimatorNister(object):
              a[:, 5] * b[:, 2] + a[:, 7] * b[:, 1], a[:, 5] * b[:, 3] + a[:, 6] * b[:, 2] + a[:, 8] * b[:, 1],
              a[:, 6] * b[:, 3] + a[:, 9] * b[:, 1], a[:, 7] * b[:, 2], a[:, 7] * b[:, 3] + a[:, 8] * b[:, 2],
              a[:, 8] * b[:, 3] + a[:, 9] * b[:, 2], a[:, 9] * b[:, 3]], dim=-1)
-
-
-
-# Nister 5pt finished the gradient test, can backpropagate nonzero grads.
-
-
-"""
-for i in range(10):
-    pts = torch.tensor([[[ 5.3496e-03, -5.0421e-02, -3.0159e-02,  1.8618e-02],
-             [ 1.5412e-01,  1.6157e-02,  5.9566e-02,  5.6140e-02],
-             [ 3.6183e-02,  5.0953e-03, -1.2028e-02,  5.1611e-02],
-             [ 3.0706e-02, -1.4839e-01, -1.5853e-02, -5.0327e-02],
-             [ 5.1635e-02, -4.2628e-02, -6.9411e-02,  2.7233e-02]]], device='cpu', requires_grad=True)
-
-    parser = create_parser(
-             description="test 5PC Nister.")
-    opt = parser.parse_args()
-    opt.device='cpu'
-    e = EssentialMatrixEstimatorNister(opt)
-    models = e.estimate_model(pts)
-    models.retain_grad()
-    #target = torch.rand(models.shape, device=models.device)
-    Rs, ts = motion_from_essential_choose_solution(models, torch.eye(3).repeat(models.shape[0], 1, 1), torch.eye(3).repeat(models.shape[0], 1, 1),
-                                                   torch.rand(2000, 2).repeat(models.shape[0], 1, 1), torch.rand(2000, 2).repeat(models.shape[0], 1, 1))
-    target_R, target_t = torch.rand(Rs.shape, device=models.device), torch.rand(ts.shape, device=models.device)
-    Rs.retain_grad()
-    loss = torch.norm(Rs-target_R)#min_matches
-    loss.backward()
-    print(models.grad)
-
-"""
