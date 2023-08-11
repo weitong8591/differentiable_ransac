@@ -1,13 +1,13 @@
 # Generalized Differentiable RANSAC 
 
 **PyTorch Implementation of the paper:**
-[Generalized Differentiable RANSAC](https://arxiv.org/abs/2212.13185https://arxiv.org/abs/2212.13185)
+[Generalized Differentiable RANSAC](https://arxiv.org/abs/2212.13185https://arxiv.org/abs/2212.13185) ($\nabla$-RANSAC).
 
 Tong Wei, Yash Patel, Alexander Shekhovtsov, Jiri Matas and Daniel Barath.
 
 **Important links for the trained models and datasets:**
 
-Trained models of 5PC/7PC/8PC for E/F estimation, and 'point_model.net' for 3D point coud registration are avaiable at [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip).
+Trained models of 5PC/7PC/8PC for E/F estimation, and 'point_model.net' for 3D point coud registration are available at [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip).
 Data for E/F can be downloaded at [diff_ransac_data](https://cmp.felk.cvut.cz/~weitong/diff_ransac_data.zip), and [3d_match_data](https://cmp.felk.cvut.cz/~weitong/3d_match_data.zip) for point registration.
 ## Python Environments
 Here are some required packages,
@@ -55,7 +55,7 @@ RootSIFT feature preparation is referred to [Ransac-tutorial-data](https://githu
 [comment]: <> (Saved features and models can be downloaded from [here]&#40;https://cmp.felk.cvut.cz/~weitong/&#41;.)
 
 ## Implementations
-The minimal solvers, model scoring functions and the RANSAC algorithm,local optimization, etc. are re-implemented in PyTorch referring to [MAGSAC](https://github.com/danini/magsac).
+The minimal solvers, model scoring functions, local optimization, etc. are re-implemented in PyTorch referring to [MAGSAC](https://github.com/danini/magsac).
 Also, thanks to the public repo of [CLNet](https://github.com/sailor-z/CLNet), [NG-RANSAC](https://github.com/vislearn/ngransac), and the libraries of
 [PyTorch](https://pytorch.org/get-started/previous-versions/),
 [Kornia](https://github.com/kornia/kornia).
