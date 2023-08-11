@@ -70,8 +70,8 @@ $ python test.py -nf 2000 -m pretrained_models/saved_model_5PC_l_epi/model.net -
 ``` 
 [comment]: <> ([0.5924076, 0.6333666, 0.67357635])
 test on a single scene using ```-ds <scene_name>``` , instead, ```-bm 1 ```indicates testing on 12 scenes.
-[example_model](pretrained_models/saved_model_5PC_l_epi/model.net) is one of the saved models provided for quick try in this repo, 
-feel free to try more models, downloaded from [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip).
+[example_model](pretrained_models/saved_model_5PC_l_epi/model.net) is one of the saved models for quick try in this repo, 
+feel free to try more models, [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip).
 
 train/test with 8PC using```-fmat 1 -sam 3```, 7PC```-fmat 1 -sam 2```, 5PC```-fmat 0 -sam 2```.
 Note that we provide this easy start Python testing for simple checking, to reproduce the test results, feel free to go ahead.
