@@ -131,9 +131,7 @@ def train(
     for epoch in range(opt.epochs):
         # each step
         for idx, train_data in enumerate(tqdm(train_loader)):
-            # store the network every so often
-            torch.save(model.state_dict(), 'results/' + saved_file + '/model.net')
-            torch.save(model, 'results/' + saved_file + '/model_vision.pt')
+   
             model.train()
 
             # one step
@@ -184,25 +182,27 @@ def train(
                 print("parameters includes {} nan values".format(nan_num))
                 continue
 
-            print("_______________________________________________________")
+        print("_______________________________________________________")
+        
+        # store the network every so often
+        torch.save(model.state_dict(), 'results/' + saved_file + '/model' + str(epoch) + '.net')
 
-            # validation
-            with torch.no_grad():
-                model.eval()
-                try:
-                    valid_data = next(valid_loader_iter)
-                except StopIteration:
-                    pass
-                valid_loss, _ = train_step(valid_data, model, opt, loss_function)
-                valid_losses.append(valid_loss.item())
-                writer.add_scalar('valid_loss', valid_loss, global_step=epoch * len(train_loader) + idx)
-            writer.flush()
-            print('Step: {:02d}| Train loss: {:.4f}| Validation loss: {:.4f}'.format(
-                epoch*len(train_loader)+idx,
-                train_loss,
-                valid_loss
-            ), '\n')
-
+        # validation
+        with torch.no_grad():
+            model.eval()
+            try:
+                valid_data = next(valid_loader_iter)
+            except StopIteration:
+                pass
+            valid_loss, _ = train_step(valid_data, model, opt, loss_function)
+            valid_losses.append(valid_loss.item())
+            writer.add_scalar('valid_loss', valid_loss, global_step=epoch * len(train_loader) + idx)
+        writer.flush()
+        print('Step: {:02d}| Train loss: {:.4f}| Validation loss: {:.4f}'.format(
+            epoch*len(train_loader)+idx,
+            train_loss,
+            valid_loss
+        ), '\n')
     np.save('results/' + saved_file + '/' + 'loss_record.npy', (train_losses, valid_losses))
 
 

@@ -158,20 +158,92 @@ class GCN_Block(nn.Module):
 
 
 class RANSACLayer(nn.Module):
-    def __init__(self, opt, **kwargs):  # weights,
+    def __init__(self, opt, **kwargs):  
         super(RANSACLayer, self).__init__(**kwargs)
         self.opt = opt
+        if opt.precision == 2:
+            data_type = torch.float64
+        elif opt.precision == 0:
+            data_type = torch.float16
+        else:
+            data_type = torch.float32
+
+        if opt.fmat:
+            # Initialize the fundamental matrix estimator
+            solver = FundamentalMatrixEstimatorNew(
+                opt.device,
+                opt.weighted
+                )
+        else:
+            # Initialize the essential matrix estimator
+            solver = EssentialMatrixEstimatorNister(opt.device)
+
+        if self.opt.sampler == 0:
+            sampler = UniformSampler(
+                opt.ransac_batch_size,
+                solver.sample_size,
+            )
+        elif self.opt.sampler == 1:
+            sampler = GumbelSoftmaxSampler(
+                opt.ransac_batch_size,
+                solver.sample_size,
+                device=opt.device,
+                data_type=data_type
+            )
+        elif self.opt.sampler == 2:
+            sampler = GumbelSoftmaxSampler(
+                opt.ransac_batch_size,
+                solver.sample_size,
+                device=opt.device,
+                data_type=data_type
+                )
+
+        else:
+            # if self.opt.sampler == 3:
+            # 8PC
+            sampler = GumbelSoftmaxSampler(
+                opt.ransac_batch_size,
+                8,
+                device=opt.device,
+                data_type=data_type
+            )
+
+        scoring = MSACScore(self.opt.device)
+
+        # maximal iteration number, fixed when training, adaptive updating while testing
+        if opt.fmat:
+            # 7PC/8PC
+            # and self.opt.sampler == 3:
+            max_iters = 1000 if opt.tr else 5000
+        else:
+            # 5PC
+            max_iters = 100 if opt.tr else 5000
+
+        self.estimator = RANSAC(
+            solver,
+            sampler,
+            scoring,
+            max_iterations=max_iters,
+            fmat=opt.fmat,
+            train=opt.tr,
+            ransac_batch_size=opt.ransac_batch_size,
+            sampler_id=opt.sampler,
+            weighted=opt.weighted,
+            threshold=opt.threshold
+        )
+
+
 
     def forward(self, points, weights, K1, K2, im_size1, im_size2, ground_truth=None):
 
-        estimator = self.initialize_ransac(points.shape[0], K1, K2)
+        #estimator = self.initialize_ransac(points.shape[0], K1, K2)
         points_ = points.clone()
         if self.opt.fmat:
               points_[:, 0:2] = denormalize_pts(points[:, 0:2].clone(), im_size1)
               points_[:, 2:4] = denormalize_pts(points[:, 2:4].clone(), im_size2)
 
         start_time = time.time()
-        models, _, model_score, iterations = estimator(points_, weights, K1, K2, ground_truth)
+        models, _, model_score, iterations = self.estimator(points_, weights, K1, K2, ground_truth)
         ransac_time = time.time() - start_time
 
         # collect all the models from different iterations
@@ -184,86 +256,113 @@ class RANSACLayer(nn.Module):
 
         return Es[nan_filter], ransac_time
 
-    def initialize_ransac(self, num_points, K1, K2):
-        if self.opt.precision == 2:
-            data_type = torch.float64
-        elif self.opt.precision == 0:
-            data_type = torch.float16
-        else:
-            data_type = torch.float32
+# class RANSACLayer(nn.Module):
+#     def __init__(self, opt, **kwargs):  # weights,
+#         super(RANSACLayer, self).__init__(**kwargs)
+#         self.opt = opt
 
-        if self.opt.fmat:
-            # Initialize the fundamental matrix estimator
-            normalizing_multiplier = 1
-            estimator = FundamentalMatrixEstimatorNew(
-                self.opt.device,
-                self.opt.weighted
-                )
-        else:
-            # Initialize the essential matrix estimator
-            estimator = EssentialMatrixEstimatorNister(self.opt.device)
-            # Normalize the threshold
-            normalizing_multiplier = (K1[0, 0] + K1[1, 1] + K2[0, 0] + K2[1, 1]) / 4
+#     def forward(self, points, weights, K1, K2, im_size1, im_size2, ground_truth=None):
 
-        if self.opt.sampler == 0:
-            sampler = UniformSampler(
-                self.opt.ransac_batch_size,
-                estimator.sample_size,
-                num_points
-                )
-        elif self.opt.sampler == 1:
-            sampler = GumbelSoftmaxSampler(
-                self.opt.ransac_batch_size,
-                estimator.sample_size,
-                num_points,
-                device=self.opt.device,
-                data_type=data_type
-            )
-        elif self.opt.sampler == 2:
-            # 7PC/ 5PC
-            sampler = GumbelSoftmaxSampler(
-                self.opt.ransac_batch_size,
-                estimator.sample_size,
-                num_points,
-                device=self.opt.device,
-                data_type=data_type
-                )
-        else:
-            # if self.opt.sampler == 3:
-            # 8PC
-            sampler = GumbelSoftmaxSampler(
-                self.opt.ransac_batch_size,
-                8,
-                num_points,
-                device=self.opt.device,
-                data_type=data_type
-            )
+#         estimator = self.initialize_ransac(points.shape[0], K1, K2)
+#         points_ = points.clone()
+#         if self.opt.fmat:
+#               points_[:, 0:2] = denormalize_pts(points[:, 0:2].clone(), im_size1)
+#               points_[:, 2:4] = denormalize_pts(points[:, 2:4].clone(), im_size2)
 
-        scoring = MSACScore(self.opt.threshold / normalizing_multiplier, self.opt.device)
+#         start_time = time.time()
+#         models, _, model_score, iterations = estimator(points_, weights, K1, K2, ground_truth)
+#         ransac_time = time.time() - start_time
 
-        # maximal iteration number, fixed when training, adaptive updating while testing
-        if self.opt.fmat:
-            # 7PC/8PC
-            # and self.opt.sampler == 3:
-            max_iters = 1000 if self.opt.tr else 5000
-        else:
-            # 5PC
-            max_iters = 100 if self.opt.tr else 5000
+#         # collect all the models from different iterations
+#         if self.opt.tr:
+#             Es = torch.cat(list(models.values()))  # .cpu().detach().numpy() # no gradient again
+#         else:
+#             Es = models
+#         # masks for removing models containing nan values
+#         nan_filter = [not (torch.isnan(E).any()) for E in Es]
 
-        estimator = RANSAC(
-            estimator,
-            sampler,
-            scoring,
-            max_iterations=max_iters,
-            fmat=self.opt.fmat,
-            train=self.opt.tr,
-            ransac_batch_size=self.opt.ransac_batch_size,
-            sampler_id=self.opt.sampler,
-            weighted=self.opt.weighted,
-            threshold=self.opt.threshold / normalizing_multiplier
-        )
+#         return Es[nan_filter], ransac_time
 
-        return estimator
+#     def initialize_ransac(self, num_points, K1, K2):
+#         if self.opt.precision == 2:
+#             data_type = torch.float64
+#         elif self.opt.precision == 0:
+#             data_type = torch.float16
+#         else:
+#             data_type = torch.float32
+
+#         if self.opt.fmat:
+#             # Initialize the fundamental matrix estimator
+#             normalizing_multiplier = 1
+#             estimator = FundamentalMatrixEstimatorNew(
+#                 self.opt.device,
+#                 self.opt.weighted
+#                 )
+#         else:
+#             # Initialize the essential matrix estimator
+#             estimator = EssentialMatrixEstimatorNister(self.opt.device)
+#             # Normalize the threshold
+#             normalizing_multiplier = (K1[0, 0] + K1[1, 1] + K2[0, 0] + K2[1, 1]) / 4
+
+#         if self.opt.sampler == 0:
+#             sampler = UniformSampler(
+#                 self.opt.ransac_batch_size,
+#                 estimator.sample_size,
+#                 num_points
+#                 )
+#         elif self.opt.sampler == 1:
+#             sampler = GumbelSoftmaxSampler(
+#                 self.opt.ransac_batch_size,
+#                 estimator.sample_size,
+#                 num_points,
+#                 device=self.opt.device,
+#                 data_type=data_type
+#             )
+#         elif self.opt.sampler == 2:
+#             # 7PC/ 5PC
+#             sampler = GumbelSoftmaxSampler(
+#                 self.opt.ransac_batch_size,
+#                 estimator.sample_size,
+#                 num_points,
+#                 device=self.opt.device,
+#                 data_type=data_type
+#                 )
+#         else:
+#             # if self.opt.sampler == 3:
+#             # 8PC
+#             sampler = GumbelSoftmaxSampler(
+#                 self.opt.ransac_batch_size,
+#                 8,
+#                 num_points,
+#                 device=self.opt.device,
+#                 data_type=data_type
+#             )
+
+#         scoring = MSACScore(self.opt.threshold / normalizing_multiplier, self.opt.device)
+
+#         # maximal iteration number, fixed when training, adaptive updating while testing
+#         if self.opt.fmat:
+#             # 7PC/8PC
+#             # and self.opt.sampler == 3:
+#             max_iters = 1000 if self.opt.tr else 5000
+#         else:
+#             # 5PC
+#             max_iters = 100 if self.opt.tr else 5000
+
+#         estimator = RANSAC(
+#             estimator,
+#             sampler,
+#             scoring,
+#             max_iterations=max_iters,
+#             fmat=self.opt.fmat,
+#             train=self.opt.tr,
+#             ransac_batch_size=self.opt.ransac_batch_size,
+#             sampler_id=self.opt.sampler,
+#             weighted=self.opt.weighted,
+#             threshold=self.opt.threshold / normalizing_multiplier
+#         )
+
+#         return estimator
 
 
 class DS_Block(nn.Module):
