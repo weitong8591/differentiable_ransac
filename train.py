@@ -211,7 +211,7 @@ if __name__ == '__main__':
     OUT_DIR = 'results/'
     # Parse the parameters
     parser = create_parser(
-        description="Fully Differentiable RANSAC.")
+        description="Generalized Differentiable RANSAC.")
     config = parser.parse_args()
     # check if gpu device is available
     config.device = torch.device('cuda:0' if torch.cuda.is_available() and config.device != 'cpu' else 'cpu')
@@ -257,7 +257,7 @@ if __name__ == '__main__':
     train_data_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=config.batch_size,
-        num_workers=0,
+        num_workers=config.num_workers,
         pin_memory=True,
         shuffle=True
     )

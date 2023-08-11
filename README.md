@@ -1,5 +1,14 @@
-# Generalized Differentiable RANSAC Implementation in PyTorch
+# Generalized Differentiable RANSAC 
 
+**PyTorch Implementation of the paper:**
+[Generalized Differentiable RANSAC](https://arxiv.org/abs/2212.13185https://arxiv.org/abs/2212.13185)
+
+Tong Wei, Yash Patel, Alexander Shekhovtsov, Jiri Matas and Daniel Barath.
+
+**Important links for the trained models and datasets:**
+
+Trained models of 5PC/7PC/8PC for E/F estimation, and 'point_model.net' for 3D point coud registration are avaiable at [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip).
+Data for E/F can be downloaded at [diff_ransac_data](https://cmp.felk.cvut.cz/~weitong/diff_ransac_data.zip), and [3d_match_data](https://cmp.felk.cvut.cz/~weitong/3d_match_data.zip) for point registration.
 ## Python Environments
 Here are some required packages,
 ```
@@ -36,14 +45,16 @@ or try with ```conda create --name <env> --file requirements.txt```
 [comment]: <> (```)
 
 ## Datasets
-Saved features can be downloaded from [diff_ransac_data](https://cmp.felk.cvut.cz/~weitong/diff_ransac_data.zip), including Scene St. Peters Square for training, and other 12 scenes for testing.
+Saved features for E/F estimation can be downloaded from [diff_ransac_data](https://cmp.felk.cvut.cz/~weitong/diff_ransac_data.zip), including Scene St. Peters Square for training, and other 12 scenes for testing.
 878M in total, contains two folders: 878M data and 1M evaluation list of numpy files. 
+The features of 3DMatch and 3DLoMatch for training, validation and testing can be downloaded from [3d_match_data](https://cmp.felk.cvut.cz/~weitong/3d_match_data.zip).
+
 Specify the data path in all of the scripts by parameter '-pth <>'.
 RootSIFT feature preparation is referred to [Ransac-tutorial-data](https://github.com/ducha-aiki/ransac-tutorial-2020-data), [NG-RANSAC](https://github.com/vislearn/ngransac).
 
 [comment]: <> (Saved features and models can be downloaded from [here]&#40;https://cmp.felk.cvut.cz/~weitong/&#41;.)
 
-## Implementation
+## Implementations
 The minimal solvers, model scoring functions and the RANSAC algorithm,local optimization, etc. are re-implemented in PyTorch referring to [MAGSAC](https://github.com/danini/magsac).
 Also, thanks to the public repo of [CLNet](https://github.com/sailor-z/CLNet), [NG-RANSAC](https://github.com/vislearn/ngransac), and the libraries of
 [PyTorch](https://pytorch.org/get-started/previous-versions/),
@@ -106,8 +117,8 @@ add ```-fmat 1 ``` to activate fundamental matrix estimation.
 -bm in batch mode, using all the 12 scenes defined in utils.py
 -p probabilities, 0-normalized weights, 1-unnormarlized weights, 2-logits, default=2, 
 ```
-## Train the fully differentiable RANSAC
-Train the fully differentiable RANSAC end-to-end with the provided initialized weights.
+## Train the Generalized Differentiable RANSAC
+Train the Generalized Differentiable RANSAC end-to-end with the provided initialized weights.
 
  Using 5PC for E model training, 
 ```
@@ -117,13 +128,22 @@ $ python train.py -nf 2000 -m pretrained_models/weights_init_net_3_sampler_0_epo
 ```
 $ python train.py -nf 2000 -m pretrained_models/weights_init_net_3_sampler_0_epoch_1000_E_rs_r0.80_t0.00_w1_1.00_.net -bs 32 -fmat 1 -sam 3 -tr 1 -w2 1 -t 0.75 -pth <>
 ```
+## Apply $\nabla$-RANSAC in 3D point cloud registration
+Additionally, we train the proposed method on 3DMatch training set, and test on testing sets of 3DMatch and 3DLoMatch. Try it as follows:
+```
+$ python train_point.py -nf 2000 -sam 2 -tr 1 -t 0.75 -pth <>
+```
+
+```
+$ python test_magsac_point.py -m ransac_models/point_model.net -d cpu -us 0 -max 50000 -pth <>
+```
 
 ## Citation
 More details are covered in our paper and feel free to cite it if useful:
 ```
 @article{wei2023generalized,
   title={Generalized differentiable RANSAC},
-  author={Wei, Tong and Patel, Yash and Shekhovtsov, Alexander and Matas, J and Barath, D},
+  author={Wei, Tong and Patel, Yash and Shekhovtsov, Alexander and Matas, Jiri and Barath, Darath},
   journal={arXiv preprint arXiv:2212.13185},
   year={2023}
 }

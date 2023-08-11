@@ -1,6 +1,7 @@
 import time
-from ransac import RANSAC
+from ransac import RANSAC, RANSAC3D
 from estimators.essential_matrix_estimator_nister import *
+from estimators.rigid_transformation_SVD_based_solver import  *              
 from samplers.uniform_sampler import *
 from samplers.gumbel_sampler import *
 from scorings.msac_score import *
@@ -345,7 +346,7 @@ class DeepRansac_CLNet(nn.Module):
         # consensus learning layer, to learn inlier probabilities
         self.ds_0 = DS_Block(initial=True, predict=False, out_channel=128, k_num=9, sampling_rate=1.0)
 
-        # custom-layer, fully differentiable RANSAC, to estimate model
+        # custom-layer, Generalized Differentiable RANSAC, to estimate model
         self.ransac_layer = RANSACLayer(opt)
 
     def forward(self, points, K1, K2, im_size1, im_size2, prob_type=0, gt=None, predict=True):
@@ -412,3 +413,132 @@ class DeepRansac_CLNet(nn.Module):
             return ret, output_weights, avg_time/B
         else:
             return output_weights, avg_time/B
+
+
+class RANSACLayer3D(nn.Module):
+    def __init__(self, opt, **kwargs):  # weights,
+        super(RANSACLayer3D, self).__init__(**kwargs)
+        self.opt = opt
+        if opt.precision == 2:
+            data_type = torch.float64
+        elif opt.precision == 0:
+            data_type = torch.float16
+        else:
+            data_type = torch.float32
+
+        solver = RigidTransformationSVDBasedSolver()
+
+        if self.opt.sampler == 0:
+            sampler = UniformSampler(
+                opt.ransac_batch_size,
+                solver.sample_size,
+            )
+        elif self.opt.sampler == 1:
+            sampler = GumbelSoftmaxSampler(
+                opt.ransac_batch_size,
+                solver.sample_size,
+                device=opt.device,
+                data_type=data_type
+            )
+        elif self.opt.sampler == 2:
+            sampler = GumbelSoftmaxSampler(
+                opt.ransac_batch_size,
+                solver.sample_size,
+                device=opt.device,
+                data_type=data_type
+                )
+
+        else:
+            # if self.opt.sampler == 3:
+            # 8PC
+            sampler = GumbelSoftmaxSampler(
+                opt.ransac_batch_size,
+                8,
+                device=opt.device,
+                data_type=data_type
+            )
+
+        scoring = MSACScore(self.opt.device)
+
+        # maximal iteration number, fixed when training, adaptive updating while testing
+        max_iters = 1000
+
+        self.estimator = RANSAC3D(
+            solver,
+            sampler,
+            scoring,
+            max_iterations=max_iters,
+            fmat=opt.fmat,
+            train=opt.tr,
+            ransac_batch_size=opt.ransac_batch_size,
+            sampler_id=opt.sampler,
+            weighted=opt.weighted,
+            threshold=opt.threshold
+        )
+
+
+
+    def forward(self, points, weights, ground_truth=None):
+
+        start_time = time.time()
+        models, residuals, avg_residuals, model_score, iterations = self.estimator(points, weights, ground_truth)
+        ransac_time = time.time() - start_time
+        # import pdb; pdb.set_trace()
+        # collect all the models from different iterations
+        if self.opt.tr:
+            Es = torch.cat(list(models.values()))  # .cpu().detach().numpy() # no gradient again
+            loss = torch.cat(list(residuals.values()))
+            avg_loss = sum(list(avg_residuals.values()))/len(list(avg_residuals.values()))
+        else:
+            Es = models
+        # masks for removing models containing nan values
+        nan_filter = [not (torch.isnan(E).any()) for E in Es]
+
+        return Es[nan_filter], loss.mean(), avg_loss, ransac_time
+
+                
+                
+                
+class CLNet(nn.Module):
+    def __init__(self):
+        super(CLNet, self).__init__()
+
+        # consensus learning layer, to learn inlier probabilities
+        self.ds_0 = DS_Block(initial=True, predict=False, out_channel=128, k_num=9, sampling_rate=1.0)
+
+
+    def forward(self, points, prob_type=0):
+
+        B, _, N, _ = points.shape
+        #import pdb; pdb.set_trace()
+
+        w1 = self.ds_0(points)
+
+        if torch.isnan(w1.std()):
+            print("output is nan here")
+        if torch.isnan(w1).any():
+            print(w1)
+            raise Exception("the predicted weights are nan")
+
+        log_probs = F.logsigmoid(w1).view(B, -1)
+        # normalization in log space such that probabilities sum to 1
+        if torch.isnan(log_probs).any():
+            print("predicted log probs have nan values")
+
+        weights = torch.exp(log_probs).view(log_probs.shape[0], -1)
+        normalized_weights = weights / torch.sum(weights, dim=-1).unsqueeze(-1)
+
+        if prob_type == 0:
+            # normalized weights
+            output_weights = normalized_weights.clone()
+        elif prob_type == 1:
+            # unnormalized weights
+            output_weights = weights.clone()
+        else:
+            # logits
+            output_weights = log_probs.clone()
+
+        if torch.isnan(output_weights).any():
+            # This should never happen! Debug here
+            print("nan values in weights", weights)
+        return output_weights

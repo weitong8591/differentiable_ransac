@@ -11,10 +11,10 @@ class GumbelSoftmaxSampler():
         Sample based on a Gumbel-Max distribution.
         Use re-param trick for back-prop
     '''
-    def __init__(self, batch_size, num_samples, num_points, tau=1., device='cuda', data_type='torch.float32'):
+    def __init__(self, batch_size, num_samples, tau=1., device='cuda', data_type='torch.float32'):
         self.batch_size = batch_size
         self.num_samples = num_samples
-        self.num_points = num_points
+        # self.num_points = num_points
         self.device = device
         self.dtype = data_type
         self.gumbel_dist = torch.distributions.gumbel.Gumbel(
@@ -22,10 +22,10 @@ class GumbelSoftmaxSampler():
                 torch.tensor(1., device=self.device, dtype=self.dtype))
         self.tau = tau
 
-    def sample(self, logits=None, selected=None):
+    def sample(self, logits=None, num_points=2000, selected=None):
 
         if logits==None:
-            logits = torch.ones([self.batch_size, self.num_points], device=self.device, dtype=self.dtype, requires_grad=True)
+            logits = torch.ones([self.batch_size, num_points], device=self.device, dtype=self.dtype, requires_grad=True)
         else:
             logits = logits.to(self.dtype).to(self.device).repeat([self.batch_size, 1])
 
@@ -39,4 +39,4 @@ class GumbelSoftmaxSampler():
         else:
             pass
 
-        return ret, y_soft
+        return ret, y_soft#, topk.indices

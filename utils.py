@@ -14,7 +14,7 @@ def create_parser(description):
         description=description,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--model', '-m', default='None',#EF_hist_size_10_snn_0_85_thr_3.pth
+    parser.add_argument('--model', '-m', default=None,#EF_hist_size_10_snn_0_85_thr_3.pth
                         help='The name of the model to be used')
     parser.add_argument('--model_loftr', '-m2', default='None',  # EF_hist_size_10_snn_0_85_thr_3.pth
                         help='The name of the LoFTR model to be used')
@@ -51,6 +51,7 @@ def create_parser(description):
                              'It will be the epoch number used  inside training.')
     parser.add_argument('--learning_rate', '-lr', type=float, default=1e-4,
                         help='learning rate for network optimizer.')
+    parser.add_argument('--num_workers', '-nw', type=int, default=0, help='how many workers for data loader')
 
     parser.add_argument('--w0', '-w0', type=float, default=0,
                         help='loss weights, 0-pose error, 1-classification loss, 2-essential loss')

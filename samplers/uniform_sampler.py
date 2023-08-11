@@ -5,18 +5,18 @@ class UniformSampler(object):
     """
         random sampling the points, return the indices for each unique subset, or in batch.
     """
-    def __init__(self, batch_size, num_samples, num_points):
+    def __init__(self, batch_size, num_samples, ):
         self.batch_size = batch_size
         self.num_samples = num_samples
-        self.num_points = num_points
+        # self.num_points = num_points
 
     def unique_generate(self, num_points):
         sample_indices = torch.tensor([random.randint(0, len(num_points) - 1) for _ in range(self.num_samples)])
         return sample_indices
 
-    def batch_generate(self):
+    def batch_generate(self,num_points):
         sample_indices = torch.randint(0, 
-            self.num_points - 1, 
+            num_points - 1, 
             (self.batch_size, self.num_samples))
         return sample_indices
 

@@ -3,13 +3,13 @@ import torch
 
 class MSACScore(object):
 
-    def __init__(self, threshold, device="cuda"):
-        self.threshold = (3 / 2 * threshold)**2
-        self.th = (3 / 2) * threshold
+    def __init__(self, device="cuda"):
+        # self.threshold = (3 / 2 * threshold)**2
+        # self.th = (3 / 2) * threshold
         self.device = device
         self.provides_inliers = True
 
-    def score(self, matches, models):
+    def score(self, matches, models, threshold=0.75):
         """
             rewrite from Graph-cut Ransac
             github.com/danini/graph-cut-ransac
@@ -19,6 +19,7 @@ class MSACScore(object):
             :param: x1: x, y, 1; x2: x', y', 1;
             M: F/E matrix
         """
+        squared_threshold = (3 / 2 * threshold)**2
         pts1 = matches[:, 0:2]
         pts2 = matches[:, 2:4]
 
@@ -43,9 +44,9 @@ class MSACScore(object):
         except Exception as e:
             print("wrong", e)
 
-        masks = squared_distances < self.threshold
+        masks = squared_distances < squared_threshold
         # soft inliers, sum of the squared distance, while transforming the negative ones to zero by torch.clamp()
-        msac_scores = torch.sum(torch.clamp(1 - squared_distances / self.threshold, min=0.0), dim=-1)
+        msac_scores = torch.sum(torch.clamp(1 - squared_distances / squared_threshold, min=0.0), dim=-1)
 
         # following c++
         #squared_residuals = torch.sum(torch.where(squared_distances>=self.threshold, torch.zeros_like(squared_distances), squared_distances), dim=-1)

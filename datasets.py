@@ -383,4 +383,52 @@ class DatasetPicture(data.Dataset):
                 'K2': torch.from_numpy(self.K1_K2[match_id][0][1]),
                 }
 
+class Dataset3D(data.Dataset):
 
+    def __init__(self, folders, num=4000):
+
+        # access the input points
+        self.files = []
+
+        for folder in folders:
+             self.files += [folder + f for f in os.listdir(folder)]
+        self.num = num
+    def __len__(self):
+        return len(self.files)
+
+    def __getitem__(self, index):
+
+        data = np.load(self.files[index])
+        gt_pose = data['transform']
+        scores = data['corr_scores']
+        pts1 = torch.from_numpy(data['src_corr_points'])
+        pts2 = torch.from_numpy(data['ref_corr_points'])
+        # import pdb; pdb.set_trace()
+        try:
+            correspondences =  np.concatenate((pts1, pts2, np.expand_dims(scores, -1)), axis=-1)
+        except:
+            import pdb; pdb.set_trace()
+        correspondences = torch.from_numpy(correspondences)
+        if self.num > 0:
+
+            # ensure that there are exactly nfeatures entries in the data tensor
+            if correspondences.shape[0] > self.num:
+                rnd = torch.randperm(correspondences.shape[0])
+                correspondences = correspondences[rnd, :]
+                correspondences = correspondences[0:self.num]
+                gt_pose = gt_pose[:self.num]
+
+            if correspondences.shape[0] < self.num:
+                # import pdb; pdb.set_trace()
+                result = correspondences
+               
+                for i in range(0, math.ceil(self.num / correspondences.shape[0] - 1)):
+                    rnd = torch.randperm(correspondences.shape[0])
+                    result = torch.cat((result, correspondences[rnd, :]), dim=0)
+    
+                correspondences = result[0:self.num]
+
+        return {
+            'correspondences': correspondences,
+            'gt_pose': gt_pose
+            }
