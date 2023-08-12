@@ -5,3 +5,4 @@ samplers/__pycache__/
 scorings/__pycache__/
 results/
 *.out
+loftr/

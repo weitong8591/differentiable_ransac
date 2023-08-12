@@ -53,7 +53,7 @@ def train(
         opt.w2,
         opt.threshold
     )
-    writer = SummaryWriter('results_point/' + saved_file + '/vision', comment="model_vis")
+    writer = SummaryWriter('results/point/' + saved_file + '/vision', comment="model_vis")
     optimizer = torch.optim.Adam(model.parameters(), lr=opt.learning_rate)
     valid_loader_iter = iter(valid_loader)
 
@@ -115,7 +115,7 @@ def train(
                 print("parameters includes {} nan values".format(nan_num))
                 continue
 
-        torch.save(model.state_dict(), 'results_point/' + saved_file + '/model' + str(epoch) + '.net')
+        torch.save(model.state_dict(), 'results/point/' + saved_file + '/model' + str(epoch) + '.net')
         print("_______________________________________________________")
 
         # validation
@@ -136,7 +136,7 @@ def train(
                     valid_loss
                 ), '\n')
 
-    np.save('results_point/' + saved_file + '/' + 'loss_record.npy', (train_losses, valid_losses))
+    np.save('results/point/' + saved_file + '/' + 'loss_record.npy', (train_losses, valid_losses))
 
 
 if __name__ == '__main__':

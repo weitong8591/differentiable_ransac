@@ -16,7 +16,7 @@ def create_parser(description):
 
     parser.add_argument('--model', '-m', default=None,#EF_hist_size_10_snn_0_85_thr_3.pth
                         help='The name of the model to be used')
-    parser.add_argument('--model_loftr', '-m2', default='None',  # EF_hist_size_10_snn_0_85_thr_3.pth
+    parser.add_argument('--model_loftr', '-m2', default=None,  # EF_hist_size_10_snn_0_85_thr_3.pth
                         help='The name of the LoFTR model to be used')
     parser.add_argument('--data_path', '-pth', default='dataset',  # EF_hist_size_10_snn_0_85_thr_3.pth
                         help='The path you sed the dataset.')

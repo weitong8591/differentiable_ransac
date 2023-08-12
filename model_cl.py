@@ -167,7 +167,7 @@ class RANSACLayer(nn.Module):
             data_type = torch.float16
         else:
             data_type = torch.float32
-
+        import pdb; pdb.set_trace()
         if opt.fmat:
             # Initialize the fundamental matrix estimator
             solver = FundamentalMatrixEstimatorNew(
@@ -217,7 +217,7 @@ class RANSACLayer(nn.Module):
             max_iters = 1000 if opt.tr else 5000
         else:
             # 5PC
-            max_iters = 100 if opt.tr else 5000
+            max_iters = 1000 if opt.tr else 5000
 
         self.estimator = RANSAC(
             solver,

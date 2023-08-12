@@ -1,13 +1,13 @@
 # Generalized Differentiable RANSAC 
 
-**PyTorch Implementation of the paper:**
+>:newspaper: **PyTorch Implementation of the paper:**
 [Generalized Differentiable RANSAC](https://arxiv.org/abs/2212.13185https://arxiv.org/abs/2212.13185) ($\nabla$-RANSAC).
+>
+>Tong Wei, Yash Patel, Alexander Shekhovtsov, Jiri Matas and Daniel Barath.
 
-Tong Wei, Yash Patel, Alexander Shekhovtsov, Jiri Matas and Daniel Barath.
-
-**Important links for the trained models and datasets:**
-
-Trained models of 5PC/7PC/8PC for E/F estimation, and 'point_model.net' for 3D point coud registration are available at [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip).
+> :file_folder: **Important links for the trained models and datasets:**
+>
+>Trained models of 5PC/7PC/8PC for E/F estimation, and 'point_model.net' for 3D point coud registration are available at [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip).
 Data for E/F can be downloaded at [diff_ransac_data](https://cmp.felk.cvut.cz/~weitong/diff_ransac_data.zip), and [3d_match_data](https://cmp.felk.cvut.cz/~weitong/3d_match_data.zip) for point registration.
 ## Python Environments
 Here are some required packages,
@@ -128,7 +128,7 @@ $ python train.py -nf 2000 -m pretrained_models/weights_init_net_3_sampler_0_epo
 ```
 $ python train.py -nf 2000 -m pretrained_models/weights_init_net_3_sampler_0_epoch_1000_E_rs_r0.80_t0.00_w1_1.00_.net -bs 32 -fmat 1 -sam 3 -tr 1 -w2 1 -t 0.75 -pth <>
 ```
-## Apply $\nabla$-RANSAC in 3D point cloud registration
+## :new: Apply $\nabla$-RANSAC in 3D point cloud registration
 Additionally, we train the proposed method on 3DMatch training set, and test on testing sets of 3DMatch and 3DLoMatch. Try it as follows:
 ```
 $ python train_point.py -nf 2000 -sam 2 -tr 1 -t 0.75 -pth <>
@@ -137,7 +137,7 @@ $ python train_point.py -nf 2000 -sam 2 -tr 1 -t 0.75 -pth <>
 ```
 $ python test_magsac_point.py -m ransac_models/point_model.net -d cpu -us 0 -max 50000 -pth <>
 ```
-
+Note that we borrow the evaluation code [registration](registration_utils.py) and [utils](geotransformer/utils/pointcloud.py) from [GeoTransformer](https://arxiv.org/pdf/2202.06688.pdf).
 ## Citation
 More details are covered in our paper and feel free to cite it if useful:
 ```
