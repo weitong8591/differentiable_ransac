@@ -46,8 +46,13 @@ class RANSAC(object):
         best_mask = []
         best_model = []
         models = {}
-
-        while iterations < self.max_iterations:
+        if self.fmat:
+            normalized_multipler = 1
+        else:
+            normalized_multipler = (K1[0, 0] + K1[1, 1] + K1[0, 0] + K2[1, 1]) / 4
+        threshold = self.threshold / normalized_multipler
+        max_iters = self.max_iterations
+        while iterations < max_iters:
 
             # Select minimal samples for the current batch, GumbelSoftmax Sampler (id=2) can propagate the gradients
             if self.sampler_id != 2 and self.sampler_id != 3:
@@ -103,7 +108,7 @@ class RANSAC(object):
                 models[iterations] = chosen_models[torch.as_tensor(nan_filter)]
             else:
                 # Calculate the scores of the models
-                scores, inlier_masks = self.scoring.score(matches, estimated_models)
+                scores, inlier_masks = self.scoring.score(matches, estimated_models, threshold)
 
                 # Select the best model
                 best_idx = torch.argmax(scores)
@@ -122,11 +127,12 @@ class RANSAC(object):
                             best_inlier_number,
                             matches,
                             K1,
-                            K2
+                            K2,
+                            threshold
                         )
 
                     # use adaptive iteration number when testing, update the max iteration number by inlier counts
-                    self.max_iterations = min(
+                    max_iters = min(
                         self.max_iterations,
                         self.adaptive_iteration_number(
                             best_inlier_number,
@@ -171,7 +177,7 @@ class RANSAC(object):
                     #estimated_models = estimated_models.to(torch.float)
 
                 # Calculate the scores of the models
-                scores, inlier_masks = self.scoring.score(matches, estimated_models)
+                scores, inlier_masks = self.scoring.score(matches, estimated_models, threshold)
 
                 if max(scores) > best_score:
                     best_idx = torch.argmax(scores)
@@ -185,7 +191,7 @@ class RANSAC(object):
                     matches,
                     best_model.unsqueeze(0),
                     self.estimator,
-                    threshold=self.threshold
+                    threshold=threshold
                 )
         else:
             best_model = models
@@ -208,7 +214,7 @@ class RANSAC(object):
         return max(0.0, (math.log10(1.0 - confidence) / (
             math.log10(1 - inlier_ratio ** self.estimator.sample_size + self.eps))))
 
-    def localOptimization(self, best_score, best_mask, best_model, best_inlier_number, matches, K1, K2):
+    def localOptimization(self, best_score, best_mask, best_model, best_inlier_number, matches, K1, K2, threshold):
 
         # Do a single or iterated LSQ fitting
         if self.lo < 3:
@@ -237,7 +243,7 @@ class RANSAC(object):
                 if models is None:
                     models = torch.eye(3).unsqueeze(0).to(points.device)
                 # Calculate the score
-                scores, inlier_masks = self.scoring.score(matches, models)
+                scores, inlier_masks = self.scoring.score(matches, models, threshold)
 
                 # Select the best model
                 best_idx = torch.argmax(scores)
@@ -267,7 +273,7 @@ class RANSAC(object):
                 estimated_models = self.estimator.estimate_model(minimal_samples)
 
                 # Calculate the scores of the models
-                scores, inlier_masks = self.scoring.score(matches, estimated_models)
+                scores, inlier_masks = self.scoring.score(matches, estimated_models, threshold)
 
                 # Select the best model
                 best_idx = torch.argmax(scores)
