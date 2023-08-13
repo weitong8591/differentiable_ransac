@@ -9,7 +9,7 @@ try:
 
     def numerical_optimization(matches, weights, K1, K2, inlier_indices, best_model, unnormalzied_threshold, best_score):
         # bundle adjustment
-        estimated_models, _ = pymagsac.optimizeEssentialMatrix(
+        estimated_models, _ = optimizeEssentialMatrix(
             matches.squeeze().cpu().detach().numpy(),
             K1,
             K2,
