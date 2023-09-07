@@ -9,8 +9,13 @@
 >
 >Trained models of 5PC/7PC/8PC for E/F estimation, and 'point_model.net' for 3D point coud registration are available at [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip).
 Data for E/F can be downloaded at [diff_ransac_data](https://cmp.felk.cvut.cz/~weitong/diff_ransac_data.zip), and [3d_match_data](https://cmp.felk.cvut.cz/~weitong/3d_match_data.zip) for point registration.
-## Python Environments
-Here are some required packages,
+## Implementations and Environments
+The minimal solvers, model scoring functions, local optimization, etc. are re-implemented in PyTorch referring to [MAGSAC](https://github.com/danini/magsac).
+Also, thanks to the public repo of [CLNet](https://github.com/sailor-z/CLNet), [NG-RANSAC](https://github.com/vislearn/ngransac), and the libraries of
+[PyTorch](https://pytorch.org/get-started/previous-versions/),
+[Kornia](https://github.com/kornia/kornia).
+
+Here are the required packages,
 ```
 python = 3.7.11
 pytorch = 1.12.1
@@ -54,11 +59,7 @@ RootSIFT feature preparation is referred to [Ransac-tutorial-data](https://githu
 
 [comment]: <> (Saved features and models can be downloaded from [here]&#40;https://cmp.felk.cvut.cz/~weitong/&#41;.)
 
-## Implementations
-The minimal solvers, model scoring functions, local optimization, etc. are re-implemented in PyTorch referring to [MAGSAC](https://github.com/danini/magsac).
-Also, thanks to the public repo of [CLNet](https://github.com/sailor-z/CLNet), [NG-RANSAC](https://github.com/vislearn/ngransac), and the libraries of
-[PyTorch](https://pytorch.org/get-started/previous-versions/),
-[Kornia](https://github.com/kornia/kornia).
+
 
 ## Easy start for E/F matrix estimation test, return AUC scores
 ```
@@ -98,6 +99,32 @@ In C++ MAGSAC, sampler=3 always indicates the Gumbel Softmax Sampler we propose.
 $ python test_magsac.py -nf 2000 -m pretrained_models/saved_model_5PC_l_epi/model.net -bs 32 -fmat 0 -sam 3 -ds sacre_coeur -t 2 -pth <>
 ```
 add ```-fmat 1 ``` to activate fundamental matrix estimation.
+
+## :fire: Application 1: Train $\nabla$-RANSAC for Two-view geometry estimation
+Train the Generalized Differentiable RANSAC end-to-end with the provided initialized weights.
+
+ Using 5PC for E model training, 
+```
+$ python train.py -nf 2000 -m pretrained_models/weights_init_net_3_sampler_0_epoch_1000_E_rs_r0.80_t0.00_w1_1.00_.net -bs 32 -fmat 0 -sam 2 -tr 1 -w2 1 -t 0.75 -pth <>
+```
+ 8PC for F model training, 
+```
+$ python train.py -nf 2000 -m pretrained_models/weights_init_net_3_sampler_0_epoch_1000_E_rs_r0.80_t0.00_w1_1.00_.net -bs 32 -fmat 1 -sam 3 -tr 1 -w2 1 -t 0.75 -pth <>
+```
+## :new: Application 2: Apply $\nabla$-RANSAC in 3D point cloud registration
+Additionally, we train the proposed method on 3DMatch training set, and test on testing sets of 3DMatch and 3DLoMatch. Try it as follows:
+```
+$ python train_point.py -nf 2000 -sam 2 -tr 1 -t 0.75 -pth <>
+```
+
+```
+$ python test_magsac_point.py -m ransac_models/point_model.net -d cpu -us 0 -max 50000 -pth <>
+```
+Note that we borrow the evaluation code [registration](registration_utils.py) and [utils](geotransformer/utils/pointcloud.py) from [GeoTransformer](https://arxiv.org/pdf/2202.06688.pdf).
+
+## :computer: Application 3: Train $\nabla$-RANSAC together with LoFTR
+coming soon!
+
 ## Useful parameters
 ```
 -pth: the source path of all datasets
@@ -117,27 +144,7 @@ add ```-fmat 1 ``` to activate fundamental matrix estimation.
 -bm in batch mode, using all the 12 scenes defined in utils.py
 -p probabilities, 0-normalized weights, 1-unnormarlized weights, 2-logits, default=2, 
 ```
-## Train the Generalized Differentiable RANSAC
-Train the Generalized Differentiable RANSAC end-to-end with the provided initialized weights.
 
- Using 5PC for E model training, 
-```
-$ python train.py -nf 2000 -m pretrained_models/weights_init_net_3_sampler_0_epoch_1000_E_rs_r0.80_t0.00_w1_1.00_.net -bs 32 -fmat 0 -sam 2 -tr 1 -w2 1 -t 0.75 -pth <>
-```
- 8PC for F model training, 
-```
-$ python train.py -nf 2000 -m pretrained_models/weights_init_net_3_sampler_0_epoch_1000_E_rs_r0.80_t0.00_w1_1.00_.net -bs 32 -fmat 1 -sam 3 -tr 1 -w2 1 -t 0.75 -pth <>
-```
-## :new: Apply $\nabla$-RANSAC in 3D point cloud registration
-Additionally, we train the proposed method on 3DMatch training set, and test on testing sets of 3DMatch and 3DLoMatch. Try it as follows:
-```
-$ python train_point.py -nf 2000 -sam 2 -tr 1 -t 0.75 -pth <>
-```
-
-```
-$ python test_magsac_point.py -m ransac_models/point_model.net -d cpu -us 0 -max 50000 -pth <>
-```
-Note that we borrow the evaluation code [registration](registration_utils.py) and [utils](geotransformer/utils/pointcloud.py) from [GeoTransformer](https://arxiv.org/pdf/2202.06688.pdf).
 ## Citation
 More details are covered in our paper and feel free to cite it if useful:
 ```
