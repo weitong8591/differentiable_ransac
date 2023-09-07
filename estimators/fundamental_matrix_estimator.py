@@ -282,13 +282,13 @@ class FundamentalMatrixEstimatorNew(object):
         null_space = v[:, -2:, :].transpose(-1, -2)  # the last two rows
 
         # with the singularity constraint, use the last two singular vectors as a basis of the space
-        F1 = null_space[:, :, 0].view(-1, 1, 3, 3)
-        F2 = null_space[:, :, 1].view(-1, 1, 3, 3)
+        F1 = null_space[:, :, 0].view(-1, 3, 3)
+        F2 = null_space[:, :, 1].view(-1, 3, 3)
 
         # use the two bases, we can have an arbitrary F mat
         # lambda, 1-lambda, det(F) = det(lambda*F1, (1-lambda)*F2) = lambda(F1-F2)+F2 to find lambda
         # c-polynomial coefficients. det(F) = c[0]*lambda^3 + c[1]*lambda^2  + c[2]*lambda + c[3]= 0
-        c = self.coeff(F1, F2).squeeze()
+        c = self.coeff(F1, F2)#.squeeze()
 
         compmat = torch.zeros((c.shape[0], 4, 4), dtype=c.dtype, device=c.device)
         compmat[:, 1, 0] = 1.
@@ -308,5 +308,3 @@ class FundamentalMatrixEstimatorNew(object):
         # fill the invalid ones with identity matrices instead of slicing with the valid mask
         Fs[~valid_mask] = torch.eye(3, device=Fs.device, dtype=Fs.dtype).repeat(valid_mask.shape[0] * 4 - torch.sum(valid_mask), 1, 1)
         return Fs.view(-1, 3, 3)
-
-
