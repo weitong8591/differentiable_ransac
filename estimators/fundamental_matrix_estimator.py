@@ -282,13 +282,13 @@ class FundamentalMatrixEstimatorNew(object):
         null_space = v[:, -2:, :].transpose(-1, -2)  # the last two rows
 
         # with the singularity constraint, use the last two singular vectors as a basis of the space
-        F1 = null_space[:, :, 0].view(-1, 3, 3)
-        F2 = null_space[:, :, 1].view(-1, 3, 3)
+        F1 = null_space[:, :, 0].view(-1, 3, 3) if B == 1 else null_space[:, :, 0].view(-1, 1, 3, 3)
+        F2 = null_space[:, :, 1].view(-1, 3, 3) if B == 1 else null_space[:, :, 0].view(-1, 1, 3, 3)
 
         # use the two bases, we can have an arbitrary F mat
         # lambda, 1-lambda, det(F) = det(lambda*F1, (1-lambda)*F2) = lambda(F1-F2)+F2 to find lambda
         # c-polynomial coefficients. det(F) = c[0]*lambda^3 + c[1]*lambda^2  + c[2]*lambda + c[3]= 0
-        c = self.coeff(F1, F2)#.squeeze()
+        c = self.coeff(F1, F2) if B==1 else self.coeff(F1, F2).squeeze()
 
         compmat = torch.zeros((c.shape[0], 4, 4), dtype=c.dtype, device=c.device)
         compmat[:, 1, 0] = 1.
