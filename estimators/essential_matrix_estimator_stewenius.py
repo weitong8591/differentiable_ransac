@@ -3,9 +3,7 @@ from utils import *
 
 
 class EssentialMatrixEstimator(object):
-    """
-        implementation of Stewenius 5PC algorithm.
-    """
+    """Implementation of Stewenius 5PC algorithm."""
     def __init__(self, device='cuda'):
         self.sample_size = 5
 
@@ -20,9 +18,7 @@ class EssentialMatrixEstimator(object):
         return None
 
     def estimate_minimal_model(self, pts, weights=None):  # x1 y1 x2 y2
-        """
-            using 5 points to estimate Essential matrix.
-        """
+        """Using 5 points to estimate Essential matrix."""
         try:
             pts.shape[1] == self.sample_size
         except Exception as e:
@@ -57,7 +53,7 @@ class EssentialMatrixEstimator(object):
         null_space_mat = null_space.reshape(null_space.shape[0], 3, 3, null_space.shape[-1]).transpose(1, 2)  # X, Y, Z, W
         # Step2: expansion of the constraints:
         # determinant constraint det(E) = 0,
-        # trace constraint 2EE^TE - trace(EE^T)E = 0
+        # trace constraint $2EE^{T}E - trace(EE^{T)}E = 0$
         constraint_mat = self.get_constraint_mat(null_space_mat, batch_size)
 
         # Step 3: Eliminate part of the matrix to isolate polynomials in z.
@@ -84,12 +80,15 @@ class EssentialMatrixEstimator(object):
         return E_models
 
     def get_constraint_mat(self, null_space, B):
-        """expansion of the constraints. 10*20"""
+        """Expansion of the constraints.
+
+        10*20
+        """
 
         constraint_mat = torch.zeros((B, 10, 20), device=self.device)
 
-        # 1st: trace constraint 2EE^TE - trace(EE^T)E = 0
-        # compute the EE^T
+        # 1st: trace constraint $2EE^{T}E - trace(EE^{T})E = 0$
+        # compute the $EE^T$
         EE_t = torch.zeros((B, 3, 3, 10), device=self.device)
 
         self.multiply_deg_one_poly(null_space[:, 0, 0], null_space[:, 0, 0])
@@ -133,13 +132,12 @@ class EssentialMatrixEstimator(object):
         return constraint_mat
 
     def multiply_deg_one_poly(self, a, b):
+        """From Graph-cut Ransac Multiply two degree one polynomials of variables x, y, z.
+
+        E.g. p1 = a[0]x + a[1]y + a[2]z + a[3]
+        Output order: x^2 xy y^2 xz yz z^2 x y z 1 ('GrevLex', Graded reverse lexicographic order)
+        1*10
         """
-            from Graph-cut Ransac
-            Multiply two degree one polynomials of variables x, y, z.
-            E.g. p1 = a[0]x + a[1]y + a[2]z + a[3]
-            Output order: x^2 xy y^2 xz yz z^2 x y z 1 ('GrevLex', Graded reverse lexicographic order)
-            1*10
-            """
 
         return torch.stack([a[:, 0] * b[:, 0], a[:, 0] * b[:, 1] + a[:, 1] * b[:, 0],
                             a[:, 1] * b[:, 1], a[:, 0] * b[:, 2] + a[:, 2] * b[:, 0],
@@ -149,9 +147,8 @@ class EssentialMatrixEstimator(object):
 
 
     def multiply_two_deg_one_poly(self, a, b):
-        """
-        from Graph-cut Ransac
-        Multiply two degree one polynomials of variables x, y, z.
+        """From Graph-cut Ransac Multiply two degree one polynomials of variables x, y, z.
+
         E.g. p1 = a[0]x + a[1]y + a[2]z + a[3]
         Output order: x^2 xy y^2 xz yz z^2 x y z 1 (GrevLex)
         1*20
@@ -173,5 +170,3 @@ class EssentialMatrixEstimator(object):
             a[:, 9] * b[:, 3]
 
         ], dim=-1)
-
-

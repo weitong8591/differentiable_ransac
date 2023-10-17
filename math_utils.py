@@ -3,8 +3,9 @@ import torch
 
 
 def multi_cubic(a0, b0, c0, d0, all_roots=True):
-    """Analytical closed-form solver for multiple cubic equations
-    (3rd order polynomial), based on `numpy` functions.
+    """Analytical closed-form solver for multiple cubic equations (3rd order polynomial), based on `numpy`
+    functions.
+
     Parameters
     ----------
     a0, b0, c0, d0: array_like
@@ -44,7 +45,7 @@ def multi_cubic(a0, b0, c0, d0, all_roots=True):
     m3 = (~m1) & (~m2)                      # one real root and two complex
 
     def cubic_root(x):
-        """ Compute cubic root of a number while maintaining its sign"""
+        """Compute cubic root of a number while maintaining its sign."""
 
         root = torch.zeros_like(x)
         positive = (x >= 0)
@@ -54,7 +55,7 @@ def multi_cubic(a0, b0, c0, d0, all_roots=True):
         return root
 
     def roots_all_real_equal(c):
-        """Compute cubic roots if all roots are real and equal"""
+        """Compute cubic roots if all roots are real and equal."""
 
         r1 = -cubic_root(c).type(torch.cfloat)
         if all_roots:
@@ -63,7 +64,7 @@ def multi_cubic(a0, b0, c0, d0, all_roots=True):
             return r1
 
     def roots_all_real_distinct(a13, f, g, h):
-        """Compute cubic roots if all roots are real and distinct """
+        """Compute cubic roots if all roots are real and distinct."""
         j = torch.sqrt(-f)
         k = torch.arccos(-0.5*g / (j*j*j))
         m = torch.cos(third*k)
@@ -77,7 +78,7 @@ def multi_cubic(a0, b0, c0, d0, all_roots=True):
             return r1
 
     def roots_one_real(a13, g, h):
-        """Compute cubic roots if one root is real and other two are complex"""
+        """Compute cubic roots if one root is real and other two are complex."""
 
         sqrt_h = torch.sqrt(h)
         S = cubic_root(-0.5*g + sqrt_h)
@@ -188,10 +189,7 @@ class StrumPolynomialSolver(object):
         return fx
 
     def ridders_method_newton(self, fvec, a, b, tol, tol_newton=1e-3/2, n_roots=None):
-        """
-            Applies Ridder's bracketing method until we get close to root, followed by newton iterations
-
-        """
+        """Applies Ridder's bracketing method until we get close to root, followed by newton iterations."""
 
         fa = self.polyval(fvec, a, self.n)
         fb = self.polyval(fvec, b, self.n)
@@ -389,10 +387,7 @@ class StrumPolynomialSolverBatch(object):
         return fx
 
     def ridders_method_newton(self, fvec, a, b, tol, tol_newton=1e-3/2, n_roots=None):
-        """
-            Applies Ridder's bracketing method until we get close to root, followed by newton iterations
-
-        """
+        """Applies Ridder's bracketing method until we get close to root, followed by newton iterations."""
 
         fa = self.polyval(fvec, a, self.n)
         fb = self.polyval(fvec, b, self.n)
@@ -504,6 +499,3 @@ class StrumPolynomialSolverBatch(object):
             roots.append(root)
 
         return n_roots, roots
-
-
-

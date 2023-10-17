@@ -393,7 +393,7 @@ class RANSAC3D(object):
                     best_score = scores[best_idx]
                     best_mask = inlier_masks[best_idx]
                     best_model = estimated_models[best_idx]
-                    best_inlier_number = torch.sum(best_mask)                    
+                    best_inlier_number = torch.sum(best_mask)
 
                     # use adaptive iteration number when testing, update the max iteration number by inlier counts
                     self.max_iterations = min(
@@ -443,7 +443,7 @@ class RANSAC3D(object):
                     self.estimator,
                     threshold=self.threshold
                 )
-            
+
         else:
             best_model = models
 

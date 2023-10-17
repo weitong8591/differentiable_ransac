@@ -9,12 +9,11 @@ class RigidTransformationSVDBasedSolver:
         self.sqrt_3 = torch.sqrt(torch.tensor(3.))
 
     def estimate_model(self, data, weights=None, sample_indices=None, flag=True):
-        
         """
             https://github.com/danini/graph-cut-ransac/blob/7d4af4d4b3d5e88964631073cfb472921eb118ae/src/pygcransac/include/estimators/solver_rigid_transformation_svd.h#L92
             Now it works for a batch of data, data in a shape of [batch_size, n, 6]
-            output: pose in [bs, 4, 3], R, t, scale in batches 
-        
+            output: pose in [bs, 4, 3], R, t, scale in batches
+
         """
         assert data.shape[-1] == 6
         # at least 3 pairs
@@ -67,7 +66,7 @@ class RigidTransformationSVDBasedSolver:
         t = torch.sum(R * (-centroid[:, None, 0:3]), dim=1) + centroid[:, 3:6]
 
         model = torch.cat((
-            torch.cat((R, t.unsqueeze(-1)), dim=-1), 
+            torch.cat((R, t.unsqueeze(-1)), dim=-1),
             torch.tensor([[0, 0, 0, 1]], device=R.device).repeat(R.shape[0], 1, 1)
             ), dim=1
         )
@@ -75,7 +74,6 @@ class RigidTransformationSVDBasedSolver:
         return model[nan_filter], R[nan_filter], t[nan_filter], scale[nan_filter]
 
     def squared_residual(self, pts1, pts2, descriptor, threshold=0.03):
-
         """
             rewrite from GC-RANSAC,
             https://github.com/danini/graph-cut-ransac/blob/7d4af4d4b3d5e88964631073cfb472921eb118ae/src/pygcransac/include/estimators/rigid_transformation_estimator.h#L162

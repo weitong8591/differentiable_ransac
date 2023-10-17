@@ -6,3 +6,4 @@ scorings/__pycache__/
 results/
 *.out
 loftr/
+.idea/

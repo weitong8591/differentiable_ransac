@@ -66,7 +66,7 @@ def test(model_loftr, test_loader, opt):
             confidence = test_data['mconf'].unsqueeze(dim=0)
 
             start_time = time.time()
-            
+
             if opt.ransac == 0:
                 F, _ = cv2.findFundamentalMat(
                     pts1.detach().cpu().numpy(), pts2.detach().cpu().numpy(),# threshold=1., prob=0.99999,
@@ -174,5 +174,5 @@ if __name__ == '__main__':
         test_loader = torch.utils.data.DataLoader(
             dataset, batch_size=opt.batch_size, num_workers=opt.num_workers, pin_memory=False, shuffle=False)
         print(f'Loading test data: {len(dataset)} image pairs.', flush=True)
-        
+
         test(model_loftr, test_loader, opt)

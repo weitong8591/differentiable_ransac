@@ -6,9 +6,10 @@ import torch.nn as nn
 
 def create_parser(description):
     """Create a default command line parser with the most common options.
-	Keyword arguments:
-	description -- description of the main functionality of a script/program
-	"""
+
+    Keyword arguments:
+    description -- description of the main functionality of a script/program
+    """
 
     parser = argparse.ArgumentParser(
         description=description,
@@ -69,18 +70,19 @@ def create_parser(description):
                         help='the way we use the weights, 0-normalized weights, 1-unnormarlized weights, 2-logits')
     parser.add_argument('--session', '-sid', default='',
                         help='custom session name appended to output files, '
-                             'useful to separate different runs of a script')    
+                             'useful to separate different runs of a script')
     parser.add_argument('--topk', '-topk', default=False,
                         help='use the errors of the best k models as the loss, otherwise, taaake the average.')
     parser.add_argument('--k', '-k', type=int, default=300,
                         help='the number of the best models included in the loss.')
-    
+
 
     return parser
 
 
 def init_weights(m):
-    """customize the weight initialization process as ResNet does.
+    """Customize the weight initialization process as ResNet does.
+
     https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py#L208
     """
     if isinstance(m, nn.Conv2d):
@@ -93,16 +95,16 @@ def init_weights(m):
 def create_session_string(prefix, sampler_id, epochs, fmat, nfeatures, ratio, session, w0, w1, w2, threshold):
     """Create an identifier string from the most common parameter options.
 
-	Keyword arguments:
-	prefix -- custom string appended at the beginning of the session string
-	sampler_id -- the idddenticcation of which sample you use
-	epochs -- how many epochs you trained
-	fmat -- bool indicating whether fundamental matrices or essential matrices are estimated
-	orb -- bool indicating whether ORB features or SIFT features are used
-	rootsift -- bool indicating whether RootSIFT normalization is used
-	ratio -- threshold for Lowe's ratio filter
-	session -- custom string appended at the end of the session string
-	"""
+    Keyword arguments:
+    prefix -- custom string appended at the beginning of the session string
+    sampler_id -- the idddenticcation of which sample you use
+    epochs -- how many epochs you trained
+    fmat -- bool indicating whether fundamental matrices or essential matrices are estimated
+    orb -- bool indicating whether ORB features or SIFT features are used
+    rootsift -- bool indicating whether RootSIFT normalization is used
+    ratio -- threshold for Lowe's ratio filter
+    session -- custom string appended at the end of the session string
+    """
     session_string = prefix + '_'
     if fmat:
         session_string += 'F_'

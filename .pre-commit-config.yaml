@@ -1,0 +1,44 @@
+ci:
+  autofix_prs: true
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'
+  # submodules: true
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: requirements-txt-fixer
+      - id: pretty-format-json
+        exclude: ^$|.devcontainer
+
+  # - repo: https://github.com/tox-dev/pyproject-fmt
+  #   rev: "1.1.0"
+  #   hooks:
+  #     - id: pyproject-fmt
+
+  # - repo: https://github.com/astral-sh/ruff-pre-commit
+  #   rev: v0.0.286
+  #   hooks:
+  #     - id: ruff
+  #       args: [--fix, --exit-non-zero-on-fix]
+
+
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.5
+    hooks:
+      - id: codespell
+        args:
+          - --ignore-words-list
+          - "ans,hist,laf"
+          - --skip
+          - "*.bib,*.ipynb"
+
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.5
+    hooks:
+      - id: docformatter
+        args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]

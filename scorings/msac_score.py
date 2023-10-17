@@ -10,14 +10,13 @@ class MSACScore(object):
         self.provides_inliers = True
 
     def score(self, matches, models, threshold=0.75):
-        """
-            rewrite from Graph-cut Ransac
-            github.com/danini/graph-cut-ransac
-            calculate the Sampson distance between a point correspondence and essential/ fundamental matrix.
-            Sampson distance is the first order approximation of geometric distance, calculated from the closest correspondence
-            who satisfy the F matrix.
-            :param: x1: x, y, 1; x2: x', y', 1;
-            M: F/E matrix
+        """Rewrite from Graph-cut Ransac github.com/danini/graph-cut-ransac calculate the Sampson distance between
+        a point correspondence and essential/ fundamental matrix.
+
+        Sampson distance is the first order approximation of geometric distance, calculated from the closest correspondence
+        who satisfy the F matrix.
+        :param: x1: x, y, 1; x2: x', y', 1;
+        M: F/E matrix
         """
         squared_threshold = (3 / 2 * threshold)**2
         pts1 = matches[:, 0:2]
@@ -25,7 +24,7 @@ class MSACScore(object):
 
         num_pts = pts1.shape[0]
 
-        # get homogenous coordinates
+        # get homogeneous coordinates
         hom_pts1 = torch.cat((pts1, torch.ones((num_pts, 1), device=pts1.device)), dim=-1)
         hom_pts2 = torch.cat((pts2, torch.ones((num_pts, 1), device=pts2.device)), dim=-1)
 
@@ -54,5 +53,3 @@ class MSACScore(object):
         # score = (-squared_residuals + inlier_number * self.threshold)/self.threshold
 
         return msac_scores, masks
-
-

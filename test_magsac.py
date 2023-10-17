@@ -231,5 +231,3 @@ if __name__ == '__main__':
         model.load_state_dict(torch.load(opt.model, map_location=opt.device))
         model.eval()
         test(model, test_loader, opt)
-
-

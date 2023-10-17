@@ -9,7 +9,7 @@ from feature_utils import *
 
 
 class PoseLoss(nn.modules.Module):
-    """average rotation and translation errors returned, w0"""
+    """Average rotation and translation errors returned, w0."""
 
     def __init__(self, fmat=False):
         self.fmat = fmat
@@ -69,7 +69,7 @@ class PoseLoss(nn.modules.Module):
 
 
 class ClassificationLoss(nn.modules.Module):
-    """return the binary classification loss, w1"""
+    """Return the binary classification loss, w1."""
 
     def __init__(self, fmat):
         self.fmat = fmat
@@ -105,7 +105,7 @@ class ClassificationLoss(nn.modules.Module):
 
 
 class MatchLoss(object):
-    """rewrite Match loss from CLNet, symmetric epipolar error, w3"""
+    """Rewrite Match loss from CLNet, symmetric epipolar error, w3."""
 
     def __init__(self, fmat):
         self.scoring_fun = MSACScore(fmat)
@@ -151,5 +151,3 @@ class MatchLoss(object):
                 essential_loss.append(e_l.mean())
         # average
         return sum(essential_loss) / gt_E.shape[0]
-
-

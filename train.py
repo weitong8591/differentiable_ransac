@@ -89,7 +89,7 @@ def train_step(train_data, model, opt, loss_fn):
                     K1,
                     K2,
                     im_size1,
-                    im_size2, 
+                    im_size2,
                     svd=False
                 )
 
@@ -131,7 +131,7 @@ def train(
     for epoch in range(opt.epochs):
         # each step
         for idx, train_data in enumerate(tqdm(train_loader)):
-   
+
             model.train()
 
             # one step
@@ -183,7 +183,7 @@ def train(
                 continue
 
         print("_______________________________________________________")
-        
+
         # store the network every so often
         torch.save(model.state_dict(), 'results/' + saved_file + '/model' + str(epoch) + '.net')
 

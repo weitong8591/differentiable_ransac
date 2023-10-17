@@ -13,24 +13,25 @@ import numpy as np
 def normalize_pts(pts, im_size):
     """Normalize image coordinate using the image size.
 
-	Pre-processing of correspondences before passing them to the network to be
-	independent of image resolution.
-	Re-scales points such that max image dimension goes from -0.5 to 0.5.
-	In-place operation.
+    Pre-processing of correspondences before passing them to the network to be
+    independent of image resolution.
+    Re-scales points such that max image dimension goes from -0.5 to 0.5.
+    In-place operation.
 
-	Keyword arguments:
-	pts -- 3-dim array conainting x and y coordinates in the last dimension, first dimension should have size 1.
-	im_size -- image height and width
-	"""
+    Keyword arguments:
+    pts -- 3-dim array conainting x and y coordinates in the last dimension, first dimension should have size 1.
+    im_size -- image height and width
+    """
     ret = pts.clone() / max(im_size) - torch.stack((im_size[1]/2, im_size[0]/2))
     return ret
 
 
 def denormalize_pts_inplace(pts, im_size):
     """Undo image coordinate normalization using the image size.
-        Keyword arguments:
-            pts -- N-dim array conainting x and y coordinates in the first dimension
-            im_size -- image height and width
+
+    Keyword arguments:
+        pts -- N-dim array conainting x and y coordinates in the first dimension
+        im_size -- image height and width
     """
     pts *= max(im_size)
     pts[0] += im_size[1] / 2
@@ -39,9 +40,10 @@ def denormalize_pts_inplace(pts, im_size):
 
 def denormalize_pts(pts, im_size):
     """Undo image coordinate normalization using the image size.
-        Keyword arguments:
-            pts -- N-dim array containing x and y coordinates in the first dimension
-            im_size -- image height and width
+
+    Keyword arguments:
+        pts -- N-dim array containing x and y coordinates in the first dimension
+        im_size -- image height and width
     """
 
     ret = pts.clone() * max(im_size) + torch.stack((im_size[1]/2, im_size[0]/2))
@@ -50,9 +52,9 @@ def denormalize_pts(pts, im_size):
 
 
 def recoverPose(model, p1, p2, svd, distanceThreshold=50):
-    """ recover the relative poses (R, t) from essential matrix, and choose the correct solution from 4"""
+    """Recover the relative poses (R, t) from essential matrix, and choose the correct solution from 4."""
 
-    # decompose E matirx to get R1, R2, t, -t
+    # decompose E matrix to get R1, R2, t, -t
     if svd:
         R1, R2, t = decompose_E(model)
     else:
@@ -120,7 +122,6 @@ def decompose_E(model):
     return R1, R2, t.unsqueeze(1)
 
 def new_decompose_E(model):
-
     """
       recover rotation and translation from essential matrices without SVD
       reference: Horn, Berthold KP. Recovering baseline and orientation from essential matrix[J]. J. Opt. Soc. Am, 1990, 110.
@@ -141,13 +142,13 @@ def new_decompose_E(model):
     scale_factor = torch.sqrt(0.5 * torch.trace(model @ model.transpose(0, -1)))
 
     if largest == 0:
-      b1 = scale_factor * torch.cross(e1, e2) / torch.norm(torch.cross(e1, e2)) 
+      b1 = scale_factor * torch.cross(e1, e2) / torch.norm(torch.cross(e1, e2))
     elif largest == 1:
-      b1 = scale_factor * torch.cross(e2, e3) / torch.norm(torch.cross(e2, e3)) 
+      b1 = scale_factor * torch.cross(e2, e3) / torch.norm(torch.cross(e2, e3))
     else:
-      b1 = scale_factor * torch.cross(e3, e1) / torch.norm(torch.cross(e3, e1)) 
+      b1 = scale_factor * torch.cross(e3, e1) / torch.norm(torch.cross(e3, e1))
 
-    # nomalization  
+    # nomalization
     b1_ = b1/torch.norm(b1)
 
     # skew-symmetric matrix
@@ -160,7 +161,7 @@ def new_decompose_E(model):
     # the second translation and rotation
     b2 = -b1
     B2 = -B1
-    
+
     # Eq.24, recover R
     # (bb)R = Cofactors(E)^T - BE
     R1 = (matrix_cofactor_tensor(model) - B1 @ model) / (b1.dot(b1))
@@ -169,7 +170,7 @@ def new_decompose_E(model):
     return R1, R2, b1_.unsqueeze(-1)
 
 def matrix_cofactor_tensor(matrix):
-    """cofactor matrix, refer to the numpy doc"""
+    """Cofactor matrix, refer to the numpy doc."""
     try:
       det = torch.det(matrix)
       if(det!=0):
@@ -181,7 +182,7 @@ def matrix_cofactor_tensor(matrix):
         raise Exception("singular matrix")
     except Exception as e:
         print("could not find cofactor matrix due to", e)
-        
+
 def cheirality_check(P0, P, p1, p2, distanceThreshold):
     #Q = kornia.geometry.epipolar.triangulate_points(P0.repeat(1024, 1, 1), P, p1, p2)
     # make sure the P type, complex tensor with cause error here
@@ -195,7 +196,8 @@ def cheirality_check(P0, P, p1, p2, distanceThreshold):
 
 
 def quaternion_from_matrix(matrix, isprecise=False):
-    '''Return quaternion from rotation matrix.
+    """Return quaternion from rotation matrix.
+
     If isprecise is True, the input matrix is assumed to be a precise rotation
     matrix and a faster algorithm is used.
     >>> q = quaternion_from_matrix(numpy.identity(4), True)
@@ -226,7 +228,7 @@ def quaternion_from_matrix(matrix, isprecise=False):
     >>> numpy.allclose(quaternion_from_matrix(R, isprecise=False),
     ...                quaternion_from_matrix(R, isprecise=True))
     True
-    '''
+    """
 
     M = np.array(matrix, dtype=np.float64, copy=False)[:4, :4]
     if isprecise:
@@ -278,7 +280,8 @@ def quaternion_from_matrix(matrix, isprecise=False):
 
 
 def quaternion_from_matrix_tensor(matrix, isprecise=False):
-    '''Return quaternion from rotation matrix.
+    """Return quaternion from rotation matrix.
+
     If isprecise is True, the input matrix is assumed to be a precise rotation
     matrix and a faster algorithm is used.
     >>> q = quaternion_from_matrix(numpy.identity(4), True)
@@ -309,7 +312,7 @@ def quaternion_from_matrix_tensor(matrix, isprecise=False):
     >>> numpy.allclose(quaternion_from_matrix(R, isprecise=False),
     ...                quaternion_from_matrix(R, isprecise=True))
     True
-    '''
+    """
 
     #M = torch.tensor(matrix, dtype=torch.float64, device=matrix.device)[:4, :4]
     M = matrix
@@ -431,12 +434,12 @@ def evaluate_R_t(R_gt, t_gt, R, t, q_gt=None):
 
 
 def orientation_error(pts1, pts2, M, ang):
-    """orientation error calculation for E or F matrix"""
+    """Orientation error calculation for E or F matrix."""
     # 2D coordinates to 3D homogeneous coordinates
 
     num_pts = pts1.shape[0]
 
-    # get homogenous coordinates
+    # get homogeneous coordinates
     hom_pts1 = torch.cat((pts1, torch.ones((num_pts, 1), device=M.device)), dim=-1)
     hom_pts2 = torch.cat((pts2, torch.ones((num_pts, 1), device=M.device)), dim=-1)
 
@@ -460,7 +463,7 @@ def orientation_error(pts1, pts2, M, ang):
 
 
 def scale_error(pts1, pts2, M, scale_ratio):
-    """scale error of the essential/ fundamental matrix"""
+    """Scale error of the essential/ fundamental matrix."""
 
     num_pts = pts1.shape[0]
 
@@ -479,7 +482,7 @@ def scale_error(pts1, pts2, M, scale_ratio):
 
 
 def eval_essential_matrix_numpy(p1n, p2n, E, dR, dt):
-    """recover the rotation and translation matrices through OpneCV and return their errors"""
+    """Recover the rotation and translation matrices through OpneCV and return their errors."""
 
     if len(p1n) != len(p2n):
         raise RuntimeError('Size mismatch in the keypoint lists')
@@ -504,7 +507,7 @@ def eval_essential_matrix_numpy(p1n, p2n, E, dR, dt):
 
 
 def eval_essential_matrix(p1n, p2n, E, dR, dt, svd=True):
-    """evaluate the essential matrix, decompose E to R and t, return the rotation and translation error."""
+    """Evaluate the essential matrix, decompose E to R and t, return the rotation and translation error."""
 
     if len(p1n) != len(p2n):
         raise RuntimeError('Size mismatch in the keypoint lists')
@@ -529,15 +532,13 @@ def eval_essential_matrix(p1n, p2n, E, dR, dt, svd=True):
 
 
 def AUC(losses, thresholds=[5, 10, 20], binsize=5):
-    """
-    from NG-RANSAC
-    Compute the AUC up to a set of error thresholds.
+    """From NG-RANSAC Compute the AUC up to a set of error thresholds.
 
     Return multiple AUC corresponding to multiple threshold provided.
     Keyword arguments:
     losses -- list of losses which the AUC should be calculated for
     thresholds -- list of threshold values up to which the AUC should be calculated
-    binsize -- bin size to be used fo the cumulative histogram when calculating the AUC, the finer the more accurate
+    binsize -- bin size to be used to the cumulative histogram when calculating the AUC, the finer the more accurate
     """
 
     bin_num = int(max(thresholds) / binsize)
@@ -552,15 +553,13 @@ def AUC(losses, thresholds=[5, 10, 20], binsize=5):
 
 
 def AUC_tensor(losses, thresholds=[5, 10, 20], binsize=5):
-    """
-        re-implementation in PyTorch from NG-RANSAC
-        Compute the AUC up to a set of error thresholds.
+    """Re-implementation in PyTorch from NG-RANSAC Compute the AUC up to a set of error thresholds.
 
-        Return multiple AUC corresponding to multiple threshold provided.
-        Keyword arguments:
-        losses -- list of losses which the AUC should be calculated for
-        thresholds -- list of threshold values up to which the AUC should be calculated
-        binsize -- bin size to be used fo the cumulative histogram when calculating the AUC, the finer the more accurate
+    Return multiple AUC corresponding to multiple threshold provided.
+    Keyword arguments:
+    losses -- list of losses which the AUC should be calculated for
+    thresholds -- list of threshold values up to which the AUC should be calculated
+    binsize -- bin size to be used to the cumulative histogram when calculating the AUC, the finer the more accurate
     """
 
     bin_num = int(max(thresholds) / binsize)
@@ -583,7 +582,6 @@ def cross_product_matrix(x):
 
     Returns:
         The constructed cross_product_matrix symmetric matrix with shape :math:`(*, 3, 3)`.
-
     """
     if not x.shape[-1] == 3:
         raise AssertionError(x.shape)
@@ -605,7 +603,7 @@ def motion_from_essential_choose_solution(
     K2: torch.Tensor,
     x1: torch.Tensor,
     x2: torch.Tensor) :
-    """from kornia"""
+    """From kornia."""
     r"""Recover the relative camera rotation and the translation from an estimated essential matrix.
 
     The method checks the corresponding points in two images and also returns the triangulated
@@ -629,7 +627,6 @@ def motion_from_essential_choose_solution(
     Returns:
         The rotation and translation plus the 3d triangulated points.
         The tuple is as following :math:`[(*, 3, 3), (*, 3, 1), (*, N, 3)]`.
-
     """
     if not (len(E_mat.shape) >= 2 and E_mat.shape[-2:] == (3, 3)):
         raise AssertionError(E_mat.shape)
@@ -711,7 +708,7 @@ def motion_from_essential_choose_solution(
 
 
 def f_error(pts1, pts2, F, gt_F, threshold):
-    """ from NG-RANSAC Compute multiple evaluaton measures for a fundamental matrix.
+    """From NG-RANSAC Compute multiple evaluaton measures for a fundamental matrix.
 
     Return (False, 0, 0, 0) if the evaluation fails due to not finding inliers for the ground truth model,
     else return() True, F1 score, % inliers, mean epipolar error of inliers)
@@ -772,12 +769,12 @@ def f_error(pts1, pts2, F, gt_F, threshold):
 def pose_error(R, gt_R, t, gt_t):
     """NG-RANSAC, Compute the angular error between two rotation matrices and two translation vectors.
 
-	Keyword arguments:
-	R -- 2D numpy array containing an estimated rotation
-	gt_R -- 2D numpy array containing the corresponding ground truth rotation
-	t -- 2D numpy array containing an estimated translation as column
-	gt_t -- 2D numpy array containing the corresponding ground truth translation
-	"""
+    Keyword arguments:
+    R -- 2D numpy array containing an estimated rotation
+    gt_R -- 2D numpy array containing the corresponding ground truth rotation
+    t -- 2D numpy array containing an estimated translation as column
+    gt_t -- 2D numpy array containing the corresponding ground truth translation
+    """
 
     # calculate angle between provided rotations
     dR = np.matmul(R, np.transpose(gt_R))
@@ -797,7 +794,7 @@ def pose_error(R, gt_R, t, gt_t):
 
 
 def batch_episym(x1, x2, F):
-    """epipolar symmetric error from CLNet"""
+    """Epipolar symmetric error from CLNet."""
     batch_size, num_pts = x1.shape[0], x1.shape[1]
     x1 = torch.cat([x1, x1.new_ones(batch_size, num_pts, 1)], dim=-1).reshape(batch_size, num_pts, 3, 1)
     x2 = torch.cat([x2, x2.new_ones(batch_size, num_pts, 1)], dim=-1).reshape(batch_size, num_pts, 3, 1)

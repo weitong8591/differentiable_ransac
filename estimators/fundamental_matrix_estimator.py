@@ -24,7 +24,7 @@ class FundamentalMatrixEstimator(object):
         num_points = matches.shape[1]
         # Calculate the mass point for each minimal sample
         mass = torch.mean(matches, dim=1)
-        # Substract the mass point of each minimal sample from the corresponding points in both images
+        # Subtract the mass point of each minimal sample from the corresponding points in both images
         matches = matches - torch.unsqueeze(mass, 1).repeat(1, num_points, 1)
         # Calculate the distances from the mass point for each minimal sample in the source image
         distances1 = torch.linalg.norm(matches[:, :, :2], dim=2)
@@ -43,7 +43,7 @@ class FundamentalMatrixEstimator(object):
         normalized_matches1 = matches[:, :, :2] * ratio1.view(-1, 1, 1).repeat(1, num_points, 2)
         # Calculate the normalized matches in the destination image
         normalized_matches2 = matches[:, :, 2:] * ratio2.view(-1, 1, 1).repeat(1, num_points, 2)
-        
+
         # Initialize the normalizing transformations for each minimal sample in the source image
         T1 = torch.zeros((matches.shape[0], 3, 3), device=self.device)
         # Initialize the normalizing transformations for each minimal sample in the destination image
@@ -52,7 +52,7 @@ class FundamentalMatrixEstimator(object):
         # Calculate the transformation parameters
         T1[:, 0, 0] = T1[:, 1, 1] = ratio1[:]
         T2[:, 0, 0] = T2[:, 1, 1] = ratio2[:]
-        T1[:, 2, 2] = T2[:, 2, 2] = 1 
+        T1[:, 2, 2] = T2[:, 2, 2] = 1
         T1[:, 0, 2] = -ratio1 * mass[:, 0]
         T1[:, 1, 2] = -ratio1 * mass[:, 1]
         T2[:, 2, 0] = -ratio2 * mass[:, 2]
@@ -70,12 +70,10 @@ class FundamentalMatrixEstimator(object):
         c3 = (fun(1) - fun(-1)) / 6 - (fun(2) - fun(-2)) / 12
         c = torch.stack((c0, c1, c2, c3), dim=-1)
         return c
-    
+
     # Eight-point algorithm
     def estimate_non_minimal_model(self, pts, T1, T2t, weights=None):  # x1 y1 x2 y2
-        """
-        Using 8 points and singularity constraint to estimate Fundamental matrix.
-        """
+        """Using 8 points and singularity constraint to estimate Fundamental matrix."""
         # get the points
         B, N, _ = pts.shape
         pts1 = pts[:, :, 0:2]
@@ -100,7 +98,7 @@ class FundamentalMatrixEstimator(object):
         # with the singularity constraint, use the last two singular vectors as a basis of the space
         F = null_space[:, :, 0].view(-1, 3, 3)
 
-        if T1 is not None: 
+        if T1 is not None:
             for i in range(F.shape[0]):
                 F[i, :, :] = torch.mm(T2t[i, :, :], torch.mm(F[i, :, :].clone(), T1[i, :, :]))
         if torch.isnan(F).any():
@@ -108,7 +106,7 @@ class FundamentalMatrixEstimator(object):
         return F
 
     def estimate_minimal_model(self, pts, weights=None):  # x1 y1 x2 y2
-        """ using 7 points and singularity constraint to estimate the Fundamental matrix. """
+        """Using 7 points and singularity constraint to estimate the Fundamental matrix."""
 
         # get the points
         B, N, _ = pts.shape
@@ -158,8 +156,8 @@ class FundamentalMatrixEstimator(object):
                     F_models.append(F_mat)
 
         return torch.stack(F_models)
-        
-        
+
+
 class FundamentalMatrixEstimatorNew(object):
 
     def __init__(self, device='cuda', weighted=0):
@@ -182,7 +180,7 @@ class FundamentalMatrixEstimatorNew(object):
         num_points = matches.shape[1]
         # Calculate the mass point for each minimal sample
         mass = torch.mean(matches, dim=1)
-        # Substract the mass point of each minimal sample from the corresponding points in both images
+        # Subtract the mass point of each minimal sample from the corresponding points in both images
         matches = matches - torch.unsqueeze(mass, 1).repeat(1, num_points, 1)
         # Calculate the distances from the mass point for each minimal sample in the source image
         distances1 = torch.linalg.norm(matches[:, :, :2], dim=2)
@@ -230,7 +228,7 @@ class FundamentalMatrixEstimatorNew(object):
 
     # Eight-point algorithm
     def estimate_non_minimal_model(self, pts, T1, T2t, weights=None):  # x1 y1 x2 y2
-        """ Using 8 points and singularity constraint to estimate Fundamental matrix. """
+        """Using 8 points and singularity constraint to estimate Fundamental matrix."""
         # get the points
         B, N, _ = pts.shape
         pts1 = pts[:, :, 0:2]
@@ -249,7 +247,7 @@ class FundamentalMatrixEstimatorNew(object):
 
         # solve null space of A to get F
         _, _, v = torch.linalg.svd(A.transpose(-1, -2)@A)#, full_matrices=False)  # eigenvalues in increasing order
-            
+
         null_space = v[:, -1:, :].transpose(-1, -2).to(v.dtype).clone()  # the last four rows
 
         # with the singularity constraint, use the last two singular vectors as a basis of the space
@@ -262,7 +260,7 @@ class FundamentalMatrixEstimatorNew(object):
         return F
 
     def estimate_minimal_model(self, pts, weights=None):  # x1 y1 x2 y2
-        """ using 7 points and singularity constraint to estimate Fundamental matrix. """
+        """Using 7 points and singularity constraint to estimate Fundamental matrix."""
 
         # get the points
         B, N, _ = pts.shape

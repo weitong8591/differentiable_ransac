@@ -67,9 +67,7 @@ class EssentialMatrixEstimatorNister(object):
         return None
 
     def estimate_minimal_model(self, pts, weights=None):  # x1 y1 x2 y2
-        """
-            using Nister's 5 PC to estimate Essential matrix.
-        """
+        """Using Nister's 5 PC to estimate Essential matrix."""
         try:
             pts.shape[1] == self.sample_size
         except ValueError:
@@ -410,11 +408,8 @@ class EssentialMatrixEstimatorNister(object):
             # be careful of the differences between c++ and python, transpose
 
     def o1(self, a, b):
-        """
-        a, b are first order polys [x,y,z,1]
-          c is degree 2 poly with order
-          [ x^2, x*y, x*z, x, y^2, y*z, y, z^2, z, 1]
-        """
+        """A, b are first order polys [x,y,z,1] c is degree 2 poly with order [ x^2, x*y, x*z, x, y^2, y*z, y, z^2,
+        z, 1]"""
         # print(a[0] * b[2] + a[2] * b[0])
         return torch.stack([a[:, 0] * b[:, 0], a[:, 0] * b[:, 1] + a[:, 1] * b[:, 0], a[:, 0] * b[:, 2] + a[:, 2] * b[:, 0],
                             a[:, 0] * b[:, 3] + a[:, 3] * b[:, 0], a[:, 1] * b[:, 1], a[:, 1] * b[:, 2] + a[:, 2] * b[:, 1],
@@ -422,12 +417,9 @@ class EssentialMatrixEstimatorNister(object):
                             a[:, 3] * b[:, 3]], dim=-1)
 
     def o2(self, a, b):  # 10 4 20
-        """
-          a is second degree poly with order [ x^2, x*y, x*z, x, y^2, y*z, y, z^2, z, 1]
-          b is first degree with order [x y z 1]
-          c is third degree with order (same as nister's paper)
-          [ x^3, y^3, x^2*y, x*y^2, x^2*z, x^2, y^2*z, y^2, x*y*z, x*y, x*z^2, x*z, x, y*z^2, y*z, y, z^3, z^2, z, 1]
-        """
+        """A is second degree poly with order [ x^2, x*y, x*z, x, y^2, y*z, y, z^2, z, 1] b is first degree with
+        order [x y z 1] c is third degree with order (same as nister's paper) [ x^3, y^3, x^2*y, x*y^2, x^2*z, x^2,
+        y^2*z, y^2, x*y*z, x*y, x*z^2, x*z, x, y*z^2, y*z, y, z^3, z^2, z, 1]"""
         return torch.stack(
             [a[:, 0] * b[:, 0], a[:, 4] * b[:, 1], a[:, 0] * b[:, 1] + a[:, 1] * b[:, 0], a[:, 1] * b[:, 1] + a[:, 4] * b[:, 0], a[:, 0] * b[:, 2] + a[:, 2] * b[:, 0],
              a[:, 0] * b[:, 3] + a[:, 3] * b[:, 0], a[:, 4] * b[:, 2] + a[:, 5] * b[:, 1], a[:, 4] * b[:, 3] + a[:, 6] * b[:, 1],

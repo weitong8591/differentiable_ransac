@@ -12,13 +12,13 @@ def train_step(train_data, weight_model, robust_estimator, data_type, prob_type=
     # fetch the points, ground truth extrinsic and intrinsic matrices
     correspondences, gt_pose = train_data['correspondences'].to(dev, data_type), \
     train_data['gt_pose'].to(dev, data_type)
-    # 1. importance score prediction 
+    # 1. importance score prediction
     weights = weight_model(correspondences.transpose(-1, -2)[:, :, :, None])
     # import pdb; pdb.set_trace()
-    # 2. ransac 
+    # 2. ransac
     loss_back = 0
     for i, pair in enumerate(correspondences[:, :, :6]):
-        
+
         Es, loss, avg_loss, _ = robust_estimator(
             pair,
             weights[i],
@@ -32,7 +32,7 @@ def train_step(train_data, weight_model, robust_estimator, data_type, prob_type=
 
 def train(
         model,
-        estimator, 
+        estimator,
         train_loader,
         valid_loader,
         opt

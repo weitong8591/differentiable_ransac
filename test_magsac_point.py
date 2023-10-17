@@ -7,7 +7,7 @@ from tqdm import tqdm
 from model_cl import *
 from utils import *
 from datasets import Dataset3D
-from registration_utils import * 
+from registration_utils import *
 
 def test(model, test_loader, opt):
 
@@ -45,15 +45,15 @@ def test(model, test_loader, opt):
                 start_time = time.time()
                 pose, mask = pymagsac.findRigidTransformation(
                     np.ascontiguousarray(sorted_pts).astype(np.float64),
-                        probabilities=weights,                        
+                        probabilities=weights,
                         use_magsac_plus_plus=True,
                         sigma_th=opt.threshold,
                         sampler=1,
                         max_iters = opt.max_iters
                     )
-                
+
                 ransac_time += time.time() - start_time
-               
+
                 # count inlier number
                 incount = np.sum(mask)
                 try:
@@ -74,11 +74,11 @@ def test(model, test_loader, opt):
             avg_ransac_time += ransac_time / batch_size
 
         out = 'results_rigid/' + (opt.model).replace('/', '_') + '/'
-        print("RRE: %.2f RTE: %.2f RMSE: %.2f RR: %.2f " % (np.mean(pose_losses), np.mean(rtes)*100, np.mean(rmses)*100, np.mean(recalls)*100))        
+        print("RRE: %.2f RTE: %.2f RMSE: %.2f RR: %.2f " % (np.mean(pose_losses), np.mean(rtes)*100, np.mean(rmses)*100, np.mean(recalls)*100))
         if not os.path.isdir(out): os.makedirs(out)
         with open(out + str(opt.max_iters) + '_' + str(opt.use_conf) + '_test.txt', 'a', 1) as f:
             f.write('%f %f %f %f %f ms '% (np.mean(pose_losses), np.mean(rtes), np.mean(rmses), np.mean(recalls), avg_ransac_time * 1000))
-            f.write('\n') 
+            f.write('\n')
 
 
 if __name__ == '__main__':
@@ -104,5 +104,3 @@ if __name__ == '__main__':
     model.load_state_dict(torch.load(opt.model, map_location=opt.device))
     model.eval()
     test(model, test_loader, opt)
-
-

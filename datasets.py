@@ -14,10 +14,7 @@ except Exception as e:
 
 
 class Dataset(data.Dataset):
-    """
-    from NG-RANSAC
-    collect the correspondences
-    """
+    """From NG-RANSAC collect the correspondences."""
     def __init__(self, folders, ratiothreshold=0.8, nfeatures=2000, fmat=False):
 
         # access the input points
@@ -133,10 +130,7 @@ class Dataset(data.Dataset):
 
 
 class DatasetZero(data.Dataset):
-    """
-    from NG-RANSAC
-    collect the correspondences
-    """
+    """From NG-RANSAC collect the correspondences."""
     def __init__(self, folder, ratiothreshold=0.8, nfeatures=2000, fmat=False):
 
         # access the input points
@@ -247,10 +241,7 @@ class DatasetZero(data.Dataset):
 
 
 class DatasetPictureTest(data.Dataset):
-    """
-    rewrite data collector based on  NG-RANSAC
-    collect the correspondences
-    """
+    """Rewrite data collector based on  NG-RANSAC collect the correspondences."""
     def __init__(self, folder, ratiothreshold=0.8, nfeatures=2000, fmat=False):
 
         # access the input points
@@ -355,23 +346,20 @@ class Dataset3D(data.Dataset):
             if correspondences.shape[0] < self.num:
                 # import pdb; pdb.set_trace()
                 result = correspondences
-               
+
                 for i in range(0, math.ceil(self.num / correspondences.shape[0] - 1)):
                     rnd = torch.randperm(correspondences.shape[0])
                     result = torch.cat((result, correspondences[rnd, :]), dim=0)
-    
+
                 correspondences = result[0:self.num]
 
         return {
             'correspondences': correspondences,
             'gt_pose': gt_pose
             }
-            
+
 class DatasetPicture(data.Dataset):
-    """
-    rewrite data collector based on NG-RANSAC
-    collect the correspondences
-    """
+    """Rewrite data collector based on NG-RANSAC collect the correspondences."""
     def __init__(self, folder, ratiothreshold=0.8, nfeatures=2000, fmat=False, valid=False):
 
         # access the input points
@@ -385,9 +373,9 @@ class DatasetPicture(data.Dataset):
         scene = folder.split('/')[-2]
         if valid:
             keys = np.load(folder.replace(scene + '/', 'evaluation_list/') + scene + '_list.npy')
-        else:            
+        else:
             keys = np.load(folder.replace(scene + '/', 'evaluation_list/') + scene + '_train.npy')
-            
+
         self.files += [folder + f for f in os.listdir(folder)]
         self.files = sorted(self.files)
         self.files_dict = {}

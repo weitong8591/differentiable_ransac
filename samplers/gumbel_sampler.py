@@ -7,10 +7,10 @@ import random
 
 
 class GumbelSoftmaxSampler():
-    '''
-        Sample based on a Gumbel-Max distribution.
-        Use re-param trick for back-prop
-    '''
+    """Sample based on a Gumbel-Max distribution.
+
+    Use re-param trick for back-prop
+    """
     def __init__(self, batch_size, num_samples, tau=1., device='cuda', data_type='torch.float32'):
         self.batch_size = batch_size
         self.num_samples = num_samples

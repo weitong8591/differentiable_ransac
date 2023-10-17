@@ -1,7 +1,7 @@
 import time
 from ransac import RANSAC, RANSAC3D
 from estimators.essential_matrix_estimator_nister import *
-from estimators.rigid_transformation_SVD_based_solver import  *              
+from estimators.rigid_transformation_SVD_based_solver import  *
 from samplers.uniform_sampler import *
 from samplers.gumbel_sampler import *
 from scorings.msac_score import *
@@ -158,7 +158,7 @@ class GCN_Block(nn.Module):
 
 
 class RANSACLayer(nn.Module):
-    def __init__(self, opt, **kwargs):  
+    def __init__(self, opt, **kwargs):
         super(RANSACLayer, self).__init__(**kwargs)
         self.opt = opt
         if opt.precision == 2:
@@ -594,9 +594,9 @@ class RANSACLayer3D(nn.Module):
 
         return Es[nan_filter], loss.mean(), avg_loss, ransac_time
 
-                
-                
-                
+
+
+
 class CLNet(nn.Module):
     def __init__(self):
         super(CLNet, self).__init__()

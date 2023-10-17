@@ -34,7 +34,7 @@ def test(model, test_loader, opt):
             gt_F, gt_E, gt_R, gt_t = test_data['gt_F'].to(data_type), test_data['gt_E'].to(data_type), \
                                      test_data['gt_R'].to(opt.device, data_type), test_data['gt_t'].to(data_type)
             files = test_data['files']
-            # estimate model, return the model, predicted inlier probablities and normalization.
+            # estimate model, return the model, predicted inlier probabilities and normalization.
             models, weights, ransac_time = model(correspondences, K1, K2, im_size1, im_size2)
             K1_, K2_ = K1.cpu().detach().numpy(), K2.cpu().detach().numpy()
             gt_F = gt_F.cpu().detach().numpy()
@@ -140,8 +140,3 @@ if __name__ == '__main__':
         model.load_state_dict(torch.load(opt.model, map_location=opt.device))
         model.eval()
         test(model, test_loader, opt)
-
-
-
-
-

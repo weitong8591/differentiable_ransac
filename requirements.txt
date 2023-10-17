@@ -3,10 +3,10 @@ cudnn=8.4.1.50
 einops==0.6.0
 h5py==2.8.0
 numpy==1.21.6
+opencv==3.4.2
 pandas
+pytorch-gpu==1.12.1
 scikit-learn
 tensorboardX==2.5.1
-opencv==3.4.2
-pytorch-gpu==1.12.1
 tqdm==4.64.1
 yacs==0.1.8

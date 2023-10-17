@@ -52,8 +52,8 @@ def apply_transform(points: np.ndarray, transform: np.ndarray, normals: Optional
 
 
 def compose_transforms(transforms: List[np.ndarray]) -> np.ndarray:
-    r"""
-    Compose transforms from the first one to the last one.
+    r"""Compose transforms from the first one to the last one.
+
     T = T_{n_1} \circ T_{n_2} \circ ... \circ T_1 \circ T_0
     """
     final_transform = transforms[0]

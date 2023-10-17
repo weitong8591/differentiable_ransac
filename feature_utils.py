@@ -11,7 +11,7 @@ from utils import *
 
 
 def load_h5(filename):
-    '''Loads dictionary from hdf5 file'''
+    """Loads dictionary from hdf5 file."""
     dict_to_load = {}
 
     if not os.path.exists(filename):
@@ -26,7 +26,7 @@ def load_h5(filename):
 
 
 def normalize_keypoints(keypoints, K):
-    '''Normalize keypoints using the calibration data.'''
+    """Normalize keypoints using the calibration data."""
 
     C_x = K[0, 2]
     C_y = K[1, 2]
@@ -38,7 +38,7 @@ def normalize_keypoints(keypoints, K):
 
 
 def normalize_keypoints_tensor(keypoints, K):
-    '''Normalize keypoints using the calibration data.'''
+    """Normalize keypoints using the calibration data."""
 
     C_x = K[0, 2]
     C_y = K[1, 2]
