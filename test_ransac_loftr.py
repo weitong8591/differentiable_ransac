@@ -60,8 +60,6 @@ def test(model_loftr, test_loader, opt):
             pts1 = test_data['mkpts0_f'].to(opt.device).clone()
             pts2 = test_data['mkpts1_f'].to(opt.device).clone()
             K1, K2 = test_data['K1'].to(opt.device), test_data['K2'].to(opt.device)
-            # im_size1, im_size2 = torch.as_tensor(list(test_data['hw0_i'])).to(opt.device), torch.as_tensor(
-            #     list(test_data['hw1_i'])).to(opt.device)
 
             gt_R, gt_t = test_data['gt_R'].to(opt.device), test_data['gt_t'].to(opt.device)
             gt_F = test_data['gt_F'].to(opt.device)

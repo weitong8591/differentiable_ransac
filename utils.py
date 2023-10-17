@@ -16,7 +16,7 @@ def create_parser(description):
 
     parser.add_argument('--model', '-m', default=None,#EF_hist_size_10_snn_0_85_thr_3.pth
                         help='The name of the model to be used')
-    parser.add_argument('--model_loftr', '-m2', default=None,  # EF_hist_size_10_snn_0_85_thr_3.pth
+    parser.add_argument('--model_loftr', '-m2', default='pretrained_models/outdoor_ds.ckpt',
                         help='The name of the LoFTR model to be used')
     parser.add_argument('--data_path', '-pth', default='dataset',  # EF_hist_size_10_snn_0_85_thr_3.pth
                         help='The path you sed the dataset.')
@@ -69,7 +69,13 @@ def create_parser(description):
                         help='the way we use the weights, 0-normalized weights, 1-unnormarlized weights, 2-logits')
     parser.add_argument('--session', '-sid', default='',
                         help='custom session name appended to output files, '
-                             'useful to separate different runs of a script')
+                             'useful to separate different runs of a script')    
+    parser.add_argument('--topk', '-topk', default=False,
+                        help='use the errors of the best k models as the loss, otherwise, taaake the average.')
+    parser.add_argument('--k', '-k', type=int, default=300,
+                        help='the number of the best models included in the loss.')
+    
+
     return parser
 
 

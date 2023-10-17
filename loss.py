@@ -58,7 +58,6 @@ class PoseLoss(nn.modules.Module):
             loss = []
             for i in range(Es.shape[0]):
                 # pose error calculation
-                import pdb; pdb.set_trace()
                 errR, errT = eval_essential_matrix(pts1_1, pts2_2, models[i], gt_R[b], gt_t[b], svd=svd)
                 try:
                     loss.append((errR + errT) / 2) # average
@@ -112,7 +111,7 @@ class MatchLoss(object):
         self.scoring_fun = MSACScore(fmat)
         self.fmat = fmat
 
-    def forward(self, models, gt_E, pts1, pts2, K1, K2, im_size1, im_size2, best_flag=False):
+    def forward(self, models, gt_E, pts1, pts2, K1, K2, im_size1, im_size2, topk_flag=False, k=1):
         essential_loss = []
         for b in range(gt_E.shape[0]):
             if self.fmat:
@@ -144,11 +143,12 @@ class MatchLoss(object):
             e_l = torch.min(geod, geod.new_ones(geod.shape))
             if torch.isnan(e_l.mean()).any():
                 print("nan values in pose loss")# .1*
-            if best_flag:
-                essential_loss.append(torch.min(e_l))
+
+            if topk_flag:
+                topk_indices = torch.topk(e_l.mean(1), k=k, largest=False).indices
+                essential_loss.append(e_l[topk_indices].mean())
             else:
                 essential_loss.append(e_l.mean())
-
         # average
         return sum(essential_loss) / gt_E.shape[0]
 

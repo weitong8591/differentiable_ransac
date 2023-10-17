@@ -1,9 +1,11 @@
 # Generalized Differentiable RANSAC 
 
 >:newspaper: **PyTorch Implementation of the paper:**
-[Generalized Differentiable RANSAC](https://arxiv.org/abs/2212.13185https://arxiv.org/abs/2212.13185) ($\nabla$-RANSAC).
+[Generalized Differentiable RANSAC](https://openaccess.thecvf.com/content/ICCV2023/papers/Wei_Generalized_Differentiable_RANSAC_ICCV_2023_paper.pdf) ($\nabla$-RANSAC).
 >
 >Tong Wei, Yash Patel, Alexander Shekhovtsov, Jiri Matas and Daniel Barath.
+
+| [paper](https://openaccess.thecvf.com/content/ICCV2023/papers/Wei_Generalized_Differentiable_RANSAC_ICCV_2023_paper.pdf) | [poster](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/poster_nabla_ransac.pdf) | [arxiv](https://arxiv.org/abs/2212.13185https://arxiv.org/abs/2212.1318) | [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip) | [diff_ransac_data for E/F](https://cmp.felk.cvut.cz/~weitong/diff_ransac_data.zip) | [3d_match_data](https://cmp.felk.cvut.cz/~weitong/3d_match_data.zip) | [Ransac-tutorial-data](https://github.com/ducha-aiki/ransac-tutorial-2020-data) 
 
 > :file_folder: **Important links for the trained models and datasets:**
 >
@@ -60,7 +62,6 @@ RootSIFT feature preparation is referred to [Ransac-tutorial-data](https://githu
 [comment]: <> (Saved features and models can be downloaded from [here]&#40;https://cmp.felk.cvut.cz/~weitong/&#41;.)
 
 
-
 ## Easy start for E/F matrix estimation test, return AUC scores
 ```
 $ git clone http://github.com/weitong8591/differentiable_ransac.git 
@@ -74,7 +75,7 @@ test on a single scene using ```-ds <scene_name>``` , instead, ```-bm 1 ```indic
 [example_model](pretrained_models/saved_model_5PC_l_epi/model.net) is one of the saved models for quick try in this repo, 
 feel free to try more models, [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip).
 
-train/test with 8PC using```-fmat 1 -sam 3```, 7PC```-fmat 1 -sam 2```, 5PC```-fmat 0 -sam 2```.
+train/test with 8PC using ```-fmat 1 -sam 3```, 7PC ```-fmat 1 -sam 2```, 5PC ```-fmat 0 -sam 2```.
 Note that we provide this easy start Python testing for simple checking, to reproduce the test results, feel free to go ahead.
 ## Reproduce the test results
 Testing with MAGSAC++ and numerical optimization of essential matrix need C++ pybinding. 
@@ -122,9 +123,17 @@ $ python test_magsac_point.py -m ransac_models/point_model.net -d cpu -us 0 -max
 ```
 Note that we borrow the evaluation code [registration](registration_utils.py) and [utils](geotransformer/utils/pointcloud.py) from [GeoTransformer](https://arxiv.org/pdf/2202.06688.pdf).
 
-## :computer: Application 3: Train $\nabla$-RANSAC together with LoFTR
-coming soon!
+## :computer: Application 3: Learning Robust Feature Matching
 
+Download the images from [Ransac-tutorial-data](https://github.com/ducha-aiki/ransac-tutorial-2020-data), download 'outdoor_ds.ckpt' and put it into [pretraineed_models](pretraineed_models/), then train $\nabla$-RANSAC together with LoFTR to improve predicted maatches and confidences.
+```
+$ python train_ransac_loftr.py -nf 2000 -tr 1 -bs 1 -lr 0.000001 -t 0.75 -sam 3 -fmat 1 -w2 1 -sid loftr -e 50 -p 0 -topk 1 -pth <>
+```
+Test with three protocols (-ransac): 0-OpenCV-RANSAC; 0-OpenCV-MAGSAC; 2-MAGSAC++ with PROSAC.
+
+```
+$ python test_ransac_loftr.py -nf 2000 -tr 1 -bs 1 -lr 0.000001 -t 3. -sam 3 -fmat 1 -sid loftr -pth <> -m2 <fine-tuned model>
+```
 ## Useful parameters
 ```
 -pth: the source path of all datasets
@@ -143,15 +152,16 @@ coming soon!
 -ds dataset name, single dataset
 -bm in batch mode, using all the 12 scenes defined in utils.py
 -p probabilities, 0-normalized weights, 1-unnormarlized weights, 2-logits, default=2, 
+-topk: whether to get the loss averaged on the topk models or all.
 ```
 
 ## Citation
 More details are covered in our paper and feel free to cite it if useful:
 ```
-@article{wei2023generalized,
+@InProceedings{wei2023generalized,
   title={Generalized differentiable RANSAC},
   author={Wei, Tong and Patel, Yash and Shekhovtsov, Alexander and Matas, Jiri and Barath, Daniel},
-  journal={arXiv preprint arXiv:2212.13185},
+  booktitle={ICCV},
   year={2023}
 }
 ```

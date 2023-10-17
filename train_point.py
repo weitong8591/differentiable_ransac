@@ -24,9 +24,7 @@ def train_step(train_data, weight_model, robust_estimator, data_type, prob_type=
             weights[i],
             gt_pose[i]
         )
-        # if flag:
-        #     loss_back += loss
-        # else:
+
         loss_back += avg_loss
 
     return loss_back/correspondences.shape[0]
@@ -160,7 +158,7 @@ if __name__ == '__main__':
         train_model.apply(init_weights)
     train_model.train()
 
-    # collect dataset list to be used for testing
+    # collect dataset list
     train_scenes = os.listdir(config.data_path)
 
     train_folders = [config.data_path + '/' + i  + '/' for i in train_scenes]

@@ -235,7 +235,7 @@ if __name__ == '__main__':
     else:
         config.w = [float(w0 / w_sum), float(w1 / w_sum), float(w2 / w_sum)]
 
-    # collect dataset list to be used for testing
+    # collect dataset list
     if config.batch_mode:
         scenes = test_datasets
         print("\n=== BATCH MODE: Training on", len(scenes), "datasets. =================")
