@@ -7,6 +7,12 @@
 
 | [paper](https://openaccess.thecvf.com/content/ICCV2023/papers/Wei_Generalized_Differentiable_RANSAC_ICCV_2023_paper.pdf) | [poster](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/poster_nabla_ransac.pdf) | [arxiv](https://arxiv.org/abs/2212.13185https://arxiv.org/abs/2212.1318) | [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/diff_ransac_models.zip) | [diff_ransac_data for E/F](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/diff_ransac_data.zip) | [3d_match_data](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/3d_match_data.zip) | [Ransac-tutorial-data](https://github.com/ducha-aiki/ransac-tutorial-2020-data)
 
+:boom: integrated our implemented 5PC solver for essential matrix estimation in [Kornia](https://github.com/kornia/kornia)! Install it from source by
+
+```
+$ pip install git+https://github.com/kornia/kornia
+```
+An example of importing 5PC from [Kornia](https://github.com/kornia/kornia) is shown [here](kornia_5pc_example.ipynb).
 > :file_folder: **Important links for the trained models and datasets:**
 >
 >Trained models of 5PC/7PC/8PC for E/F estimation, and 'point_model.net' for 3D point cloud registration are available at [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip).
@@ -123,7 +129,7 @@ $ python test_magsac_point.py -m ransac_models/point_model.net -d cpu -us 0 -max
 ```
 Note that we borrow the evaluation code [registration](registration_utils.py) and [utils](geotransformer/utils/pointcloud.py) from [GeoTransformer](https://arxiv.org/pdf/2202.06688.pdf).
 
-## :computer: Application 3: Learning Robust Feature Matching
+## :clap: Application 3: Learning Robust Feature Matching
 
 Download the images from [Ransac-tutorial-data](https://github.com/ducha-aiki/ransac-tutorial-2020-data), download 'outdoor_ds.ckpt' and put it into [pretraineed_models](pretraineed_models/), then train $\nabla$-RANSAC together with LoFTR to improve predicted maatches and confidences.
 ```
@@ -134,6 +140,7 @@ Test with three protocols (-ransac): 0-OpenCV-RANSAC; 0-OpenCV-MAGSAC; 2-MAGSAC+
 ```
 $ python test_ransac_loftr.py -nf 2000 -tr 1 -bs 1 -lr 0.000001 -t 3. -sam 3 -fmat 1 -sid loftr -pth <> -m2 <fine-tuned model>
 ```
+
 ## Useful parameters
 ```
 -pth: the source path of all datasets
