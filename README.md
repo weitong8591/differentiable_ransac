@@ -15,8 +15,8 @@ $ pip install git+https://github.com/kornia/kornia
 An example of importing 5PC from [Kornia](https://github.com/kornia/kornia) is shown [here](kornia_5pc_example.ipynb).
 > :file_folder: **Important links for the trained models and datasets:**
 >
->Trained models of 5PC/7PC/8PC for E/F estimation, and 'point_model.net' for 3D point cloud registration are available at [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip).
-Data for E/F can be downloaded at [diff_ransac_data](https://cmp.felk.cvut.cz/~weitong/diff_ransac_data.zip), and [3d_match_data](https://cmp.felk.cvut.cz/~weitong/3d_match_data.zip) for point registration.
+>Trained models of 5PC/7PC/8PC for E/F estimation, and 'point_model.net' for 3D point cloud registration are available at [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/diff_ransac_models.zip).
+Data for E/F can be downloaded at [diff_ransac_data](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/diff_ransac_data.zip), and [3d_match_data](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/3d_match_data.zip) for point registration.
 ## Implementations and Environments
 The minimal solvers, model scoring functions, local optimization, etc. are re-implemented in PyTorch referring to [MAGSAC](https://github.com/danini/magsac).
 Also, thanks to the public repo of [CLNet](https://github.com/sailor-z/CLNet), [NG-RANSAC](https://github.com/vislearn/ngransac), and the libraries of
@@ -58,9 +58,9 @@ or try with ```conda create --name <env> --file requirements.txt```
 [comment]: <> (```)
 
 ## Datasets
-Saved features for E/F estimation can be downloaded from [diff_ransac_data](https://cmp.felk.cvut.cz/~weitong/diff_ransac_data.zip), including Scene St. Peters Square for training, and other 12 scenes for testing.
+Saved features for E/F estimation can be downloaded from [diff_ransac_data](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/diff_ransac_data.zip), including Scene St. Peters Square for training, and other 12 scenes for testing.
 878M in total, contains two folders: 878M data and 1M evaluation list of numpy files.
-The features of 3DMatch and 3DLoMatch for training, validation and testing can be downloaded from [3d_match_data](https://cmp.felk.cvut.cz/~weitong/3d_match_data.zip).
+The features of 3DMatch and 3DLoMatch for training, validation and testing can be downloaded from [3d_match_data](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/3d_match_data.zip).
 
 Specify the data path in all of the scripts by parameter '-pth <>'.
 RootSIFT feature preparation is referred to [Ransac-tutorial-data](https://github.com/ducha-aiki/ransac-tutorial-2020-data), [NG-RANSAC](https://github.com/vislearn/ngransac).
@@ -79,7 +79,7 @@ $ python test.py -nf 2000 -m pretrained_models/saved_model_5PC_l_epi/model.net -
 [comment]: <> ([0.5924076, 0.6333666, 0.67357635])
 test on a single scene using ```-ds <scene_name>``` , instead, ```-bm 1 ```indicates testing on 12 scenes.
 [example_model](pretrained_models/saved_model_5PC_l_epi/model.net) is one of the saved models for quick try in this repo,
-feel free to try more models, [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/diff_ransac_models.zip).
+feel free to try more models, [diff_ransac_models](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/diff_ransac_models.zip).
 
 train/test with 8PC using ```-fmat 1 -sam 3```, 7PC ```-fmat 1 -sam 2```, 5PC ```-fmat 0 -sam 2```.
 Note that we provide this easy start Python testing for simple checking, to reproduce the test results, feel free to go ahead.
