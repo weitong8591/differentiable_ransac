@@ -88,7 +88,7 @@ def train_step(train_data, opt, loss_fn, robust_estimator, topk_flag=False, vali
                     im_size1,
                     im_size2,
                     topk_flag=topk_flag,
-                    sssk=k,
+                    k=k,
                 )
             loss += opt.w[idx] * train_loss
     return loss, Es, ransac_time
@@ -159,7 +159,7 @@ if __name__ == '__main__':
     scenes = [config.datasets]
 
     model_loftr = LoFTR(default_cfg)
-    model_loftr.load_state_dict(torch.load("pretrained_models/outdoor_ds.ckpt")['state_dict'])
+    model_loftr.load_state_dict(torch.load(config.model_loftr)['state_dict'])
     model_loftr = model_loftr.to(config.device)
 
     optimizer_loftr = torch.optim.AdamW(params=model_loftr.parameters(), lr=config.learning_rate)

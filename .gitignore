@@ -9,3 +9,4 @@ loftr/
 .idea/
 data/
 diff_ransac_models/
+diff_ransac_data/

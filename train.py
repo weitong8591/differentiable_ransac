@@ -6,7 +6,6 @@ from loss import *
 from model_cl import *
 from datasets import Dataset
 from tensorboardX import SummaryWriter
-from sklearn.model_selection import train_test_split
 
 
 def train_step(train_data, model, opt, loss_fn):
@@ -120,6 +119,8 @@ def train(
     )
     writer = SummaryWriter('results/' + saved_file + '/vision', comment="model_vis")
     optimizer = torch.optim.Adam(model.parameters(), lr=opt.learning_rate)
+    if opt.scheduler:
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=opt.epochs*len(train_loader), eta_min=opt.eta_min)
     loss_function = [PoseLoss(opt.fmat), ClassificationLoss(opt.fmat), MatchLoss(opt.fmat)]
     valid_loader_iter = iter(valid_loader)
 
@@ -129,11 +130,11 @@ def train(
 
     # start epoch
     for epoch in range(opt.epochs):
+        train_loss_batch = []
         # each step
         for idx, train_data in enumerate(tqdm(train_loader)):
 
             model.train()
-
             # one step
             optimizer.zero_grad()
             train_loss, Es = train_step(train_data, model, opt, loss_function)
@@ -147,7 +148,7 @@ def train(
 
             try:
                 train_loss.backward()
-                print("successfully back-propagation", train_loss)
+                # print("successfully back-propagation", train_loss)
 
             except Exception as e:
                 print("we have trouble with back-propagation, pls check!", e)
@@ -162,10 +163,6 @@ def train(
                     print("pls check, there is nan value in the gradient of estimated models!", E.grad)
                     continue
 
-            train_losses.append(train_loss.cpu().detach().numpy())
-            # for vision
-            writer.add_scalar('train_loss', train_loss, global_step=epoch*len(train_loader)+idx)
-
             # add gradient clipping after backward to avoid gradient exploding
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
 
@@ -176,32 +173,38 @@ def train(
                 continue
 
             optimizer.step()
+            if opt.scheduler:
+                scheduler.step()
             # check check if the training parameters contain nan values
             nan_num = sum([torch.isnan(param).any() for param in optimizer.param_groups[0]['params']])
             if nan_num != 0:
                 print("parameters includes {} nan values".format(nan_num))
                 continue
-
-        print("_______________________________________________________")
+            train_loss_batch.append(train_loss.item())
 
         # store the network every so often
         torch.save(model.state_dict(), 'results/' + saved_file + '/model' + str(epoch) + '.net')
-
+        writer.add_scalar('train_loss', np.mean(train_loss_batch), global_step=epoch)
+        train_losses.append(np.mean(train_loss_batch))
+        print("-------------------- Epoch-{} finished, do validation-----------------------------".format(epoch))
         # validation
         with torch.no_grad():
             model.eval()
-            try:
-                valid_data = next(valid_loader_iter)
-            except StopIteration:
-                pass
-            valid_loss, _ = train_step(valid_data, model, opt, loss_function)
-            valid_losses.append(valid_loss.item())
-            writer.add_scalar('valid_loss', valid_loss, global_step=epoch * len(train_loader) + idx)
+            valid_loss_batch = []
+            for i in tqdm(range(len(valid_loader))):
+                try:
+                    valid_data = next(valid_loader_iter)
+                except StopIteration:
+                    pass
+                valid_loss, _ = train_step(valid_data, model, opt, loss_function)
+                valid_loss_batch.append(valid_loss.item())
+            writer.add_scalar('valid_loss', np.mean(valid_loss_batch), global_step=epoch)
+            valid_losses.append(np.mean(valid_loss_batch))
         writer.flush()
-        print('Step: {:02d}| Train loss: {:.4f}| Validation loss: {:.4f}'.format(
-            epoch*len(train_loader)+idx,
-            train_loss,
-            valid_loss
+        print('Epoch: {:02d}| Train loss: {:.4f}| Validation loss: {:.4f}'.format(
+            epoch,
+            np.mean(train_loss_batch),
+            np.mean(valid_loss_batch)
         ), '\n')
     np.save('results/' + saved_file + '/' + 'loss_record.npy', (train_losses, valid_losses))
 
@@ -221,7 +224,7 @@ if __name__ == '__main__':
 
     # use the pretrained model to initialize the weights if provided.
     if len(config.model) > 0:
-        train_model.load_state_dict(torch.load(config.model))
+        train_model.load_state_dict(torch.load(config.model, map_location = config.device))
     else:
         train_model.apply(init_weights)
     train_model.train()
@@ -243,17 +246,20 @@ if __name__ == '__main__':
         scenes = [config.datasets]
         print(f'Working on {scenes} with scoring {config.scoring}')
 
-    folders = [config.data_path + '/' + seq + '/train_data_rs/' for seq in scenes]
-    dataset = Dataset(
-        folders,
+    train_folders = [config.data_path + '/' + seq + '/train_data/' for seq in scenes]
+    valid_folders = [config.data_path + '/' + seq + '/valid_data/' for seq in scenes]
+
+    train_dataset = Dataset(
+        train_folders,
         nfeatures=config.nfeatures,
         fmat=config.fmat
     )
-    # split the data to train and validation
-    train_dataset, valid_dataset = train_test_split(
-        dataset,
-        test_size=0.25,
-        shuffle=True)
+    valid_dataset = Dataset(
+        valid_folders,
+        nfeatures=config.nfeatures,
+        fmat=config.fmat
+    )
+    
     train_data_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=config.batch_size,

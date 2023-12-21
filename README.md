@@ -146,6 +146,8 @@ Notes: the [initilized weights](pretrained_models/weights_init_net_3_sampler_0_e
 In terms of training loss, -w2 (mean epipolar errors) works the best in terms of AUC scores, however, using the linear combination of the classification loss (-w1 1) with -w2 as objective leads to more normal learning performance (always downward trend, but lower AUC scores in the inference). 
 The epipolar loss (w2) is not stable in different training trials.
 
+The train/valid data is updated to split off-line, the training image pair list and train-val data of St. Peters Square are avaiable [here](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/train_valid_st_peters_square.zip). 
+
 <!-- ```
 $ python train.py -nf 2000 -m pretrained_models/weights_init_net_3_sampler_0_epoch_1000_E_rs_r0.80_t0.00_w1_1.00_.net -bs 32 -fmat 1 -sam 3 -tr 1 -w2 1 -t 0.75 -pth <>
 ``` -->
@@ -168,10 +170,10 @@ $ python train_point.py -nf 2000 -sam 2 -tr 1 -t 0.75 -pth <>
 <summary>[Learning Robust Feature Matching]</summary>
 
 End-to-end training of feature matcher(eg, LoFTR) with  $\nabla$-RANSAC to improve the predictions of matches and confidences.
-Download 'outdoor_ds.ckpt' and put it into [pretrained_models](pretrained_models/).
+Download 'outdoor_ds.ckpt' within diff_ransac_models and download [loftr package](https://cmp.felk.cvut.cz/~weitong/nabla_ransac/loftr.zip).
 
 ```
-$ python train_ransac_loftr.py -nf 2000 -tr 1 -bs 1 -lr 1e-6 -t 0.75 -sam 3 -fmat 1 -w2 1 -sid loftr -e 50 -p 0 -topk 1 -pth <>
+$ python train_ransac_loftr.py -nf 2000 -tr 1 -bs 1 -lr 1e-6 -t 0.75 -sam 3 -fmat 1 -w2 1 -sid loftr -e 50 -p 0 -topk 1 -m2 diff_ransac_models/outdoor_ds.ckpt -pth RANSAC-Tutorial-Data/train/
 ```
 </details>
 
@@ -213,6 +215,8 @@ Note that we provide this Python script for simple checking. -->
 -bm in batch mode, using all the 12 testing scenes defined in utils.py
 -p probabilities, 0-normalized weights, 1-unnormarlized weights, 2-logits, default=2,
 -topk: whether to get the loss averaged on the topk models or all.
+-sch: 0 - no learning rate scheduler used, 1 use scheduler from lr to eta_min, default=0.
+-eta_min: float, the low bound for lr scheduler.
 ```
 
 </details>

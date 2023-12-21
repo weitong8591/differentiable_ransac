@@ -75,6 +75,9 @@ def create_parser(description):
                         help='use the errors of the best k models as the loss, otherwise, taaake the average.')
     parser.add_argument('--k', '-k', type=int, default=300,
                         help='the number of the best models included in the loss.')
+    parser.add_argument('--scheduler', '-sch', type=int, default=0, help='filter data ')
+    parser.add_argument('--eta_min', '-eta', type=float, default=1e-4, help='threshold to build histogram on')
+
 
 
     return parser

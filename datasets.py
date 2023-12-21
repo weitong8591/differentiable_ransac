@@ -9,7 +9,7 @@ try:
     from loftr.util import load_torch_image, readh5, loadh5
     import kornia as K
 except Exception as e:
-    print(e, ", Ignore this unless you are working with LOFTR.")
+    # print(e, ", Ignore this unless you are working with LOFTR.")
     pass
 
 
